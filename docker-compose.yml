@@ -1,0 +1,20 @@
+version: "3"  # Versão do Docker Compose
+
+services:
+  planning-voter-web:  # Nome do serviço
+    build: .  # Caminho para o Dockerfile
+    ports:
+      - "3000:3000"  # Porta que será exposta para acessar a aplicação
+    volumes:
+      - .:/app  # Mapeamento do diretório local para o diretório do container
+    depends_on:
+      - api  # Dependência com outro serviço
+
+  api:  # Nome do serviço
+    image: nginx:alpine  # Imagem a ser usada
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro  # Mapeamento do arquivo de configuração do Nginx
+      - ./build:/usr/share/nginx/html:ro  # Mapeamento do diretório de build da aplicação
+    ports:
+      - "8080:80"  # Porta que será exposta para acessar a API
+
