@@ -26,7 +26,7 @@ function App() {
   return (
     <div className='App'>
       <Login />
-      
+
       <CriarSecao gerarStringAleatoria={gerarStringAleatoria} gerarNumeroAleatorio={gerarNumeroAleatorio} />
     </div>
   );
