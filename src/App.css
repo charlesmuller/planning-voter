@@ -3,6 +3,7 @@
   justify-content: center;
   align-items: center;
   height: 100vh;
+  color: aliceblue;
 }
 
 .usuario-container form div label {
@@ -36,6 +37,7 @@ form {
   max-width: 600px;
   width: 100%;
   box-sizing: border-box;
+  color: aliceblue;
 }
 
 h1 {

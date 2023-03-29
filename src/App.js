@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import CriarSecao from "./CriarSecao";
-import Login from "./Login";
+import CriarSecao from "./componentes/CriarSecao";
+import Login from "./componentes/Login";
 
 
 function gerarStringAleatoria(tamanho) {
