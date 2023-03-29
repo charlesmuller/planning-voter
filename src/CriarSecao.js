@@ -1,22 +1,28 @@
-import React, { Component,  } from "react";
+import React from "react";
 import "./App.css";
 
-class CriarSecao extends Component {
-    render() {
-        return (
-            <div className="secao-container">
-                <form>
-                    <h1>Criar Seção de Planning</h1>
-                    <div>
-                        <label>Sua seção</label>
-                        <input type="text" id="id-secao" name="secao" readOnly/>
-                    </div>
+function CriarSecao({ gerarStringAleatoria, gerarNumeroAleatorio }) {
 
-                    <button type="submit">Entrar</button>
-                </form>
-            </div>
-        )
-    }
+    return (
+        <div className="secao-container">
+            <form>
+                <h1>Criar Seção de Planning</h1>
+                <div>
+                    <label>Sua seção</label>
+                    <input
+                        type="text"
+                        id="id-secao"
+                        name="secao"
+                        readOnly
+                        value={`${gerarStringAleatoria(8)}${Math.floor(Math.random() * 100)}`}
+                    />
+                </div>
+
+                <button onClick={gerarNumeroAleatorio}>Gerar Número</button>
+            </form>
+        </div>
+    );
+
 }
 
 export default CriarSecao;

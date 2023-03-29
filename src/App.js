@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import CriarSecao from "./CriarSecao";
 import Login from "./Login";
 
+
 function gerarStringAleatoria(tamanho) {
   let caracteres = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
   let resultado = '';
@@ -12,25 +13,21 @@ function gerarStringAleatoria(tamanho) {
 }
 
 function App() {
-  const [randomNumber, setRandomNumber] = useState("");
-  const [randomString, setRandomString] = useState("");
+  const [randomNumber, setNumeroAleatorio] = useState("");
+  const [randomString, setStringAleatoria] = useState("");
 
-  const handleRandomNumber = () => {
+  const gerarNumeroAleatorio = () => {
     const newNumber = Math.floor(Math.random() * 100);
-    setRandomNumber(newNumber);
+    setNumeroAleatorio(newNumber);
     const newString = gerarStringAleatoria(10);
-    setRandomString(newString);
+    setStringAleatoria(newString);
   }
 
   return (
     <div className='App'>
       <Login />
-      <div>
-        <input type="text" id="id-secao" name="secao" readOnly value={`${gerarStringAleatoria(8)}${Math.floor(Math.random() * 100)}`} />
-
-        <button onClick={handleRandomNumber}>Gerar Número</button>
-      </div>
-      <CriarSecao/>
+      
+      <CriarSecao gerarStringAleatoria={gerarStringAleatoria} gerarNumeroAleatorio={gerarNumeroAleatorio} />
     </div>
   );
 }
