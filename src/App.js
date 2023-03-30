@@ -26,18 +26,22 @@ function App() {
   return (
     <BrowserRouter>
       <div className='App'>
-        <nav>
-          <ul>
-            <li>
-              <Link to="/login">Login</Link>
-            </li>
-          </ul>
-          <ul>
-            <li>
-              <Link to="/criarsecao">Criar Seção</Link>
-            </li>
-          </ul>
-        </nav>
+        <div className="nav-container">
+          <div className="nav-menu">
+            <nav>
+              <ul>
+                <li>
+                  <Link to="/login">Login</Link>
+                </li>
+              </ul>
+              <ul>
+                <li>
+                  <Link to="/criarsecao">Criar Seção</Link>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </div>
 
         <Routes>
           <Route path="/login" element={<Login />} />
