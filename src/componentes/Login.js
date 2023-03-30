@@ -7,8 +7,8 @@ class Login extends Component {
             <div className="usuario-container">
                 <form>
                     <h1>Acessar Seção de Planning</h1>
-                    <div>
-                        <label htmlFor="email">Seu usuário</label>
+                    <div className="input-container">
+                        <label>Digite seu usuário</label>
                         <input type="email" id="email" name="email" />
                     </div>
 

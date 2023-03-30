@@ -43,7 +43,7 @@ form {
 h1 {
   align-items: center;
   margin-bottom: 2rem;
-  font-size: 28px;
+  font-size: 30px;
 }
 
 label {
@@ -55,26 +55,107 @@ input {
   padding: 1.0rem;
   border: 1px solid #ccc;
   border-radius: 10px;
-  width: 100%;
+  width: 45%;
   box-sizing: border-box;
-  font-size: 22px;
+  font-size: 25px;
+  text-align: center;
+  margin-left: 140px;
+  font-weight: bold;
 }
 
+
 form button {
-  background-color: #4CAF50;
-  color: white;
+  background-color: #ccff00;
+  color: black;
   padding: 10px 20px;
   border: none;
   border-radius: 10px;
   cursor: pointer;
   font-size: 22px;
+  font-weight: bold;
 }
 
 form button:hover {
-  background-color: #45a049;
+  background-color: #dcffec;
 }
 
 .error {
   color: red;
   margin-bottom: 10px;
+}
+
+nav {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  background-color: #ccff00;
+  height: 50px;
+  border-radius: 10px;
+}
+
+@media (max-width: 600px) {
+  nav {
+    flex-direction: column;
+  }
+}
+
+.header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.nav-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 600px) {
+  .nav-container {
+    flex-direction: column;
+    padding: 20px 0;
+  }
+}
+
+.nav-menu {
+  margin: 0 auto;
+}
+
+.nav-menu a {
+  color: black;
+  font-weight: bold;
+  font-size: 22px;
+}
+
+nav a {
+  color: #fff;
+  font-family: Arial, sans-serif;
+  font-size: 16px;
+  text-decoration: none;
+}
+
+nav a:hover {
+  color: #cccc;
+}
+
+/* Define o estilo dos itens do menu */
+nav ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Define o espaçamento entre os itens do menu */
+nav li {
+  float: left;
+  margin-right: 20px;
+  margin-left: 20px;
+  line-height: 50px;
+}
+
+/* Define a cor do item do menu ativo */
+nav li.active a {
+  color: #fff;
 }

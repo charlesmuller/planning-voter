@@ -18,7 +18,7 @@ function CriarSecao({ gerarStringAleatoria, gerarNumeroAleatorio }) {
                     />
                 </div>
 
-                <button onClick={gerarNumeroAleatorio}>Gerar Número</button>
+                <button onClick={gerarNumeroAleatorio}>Gerar link de Seção</button>
             </form>
         </div>
     );
