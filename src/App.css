@@ -55,10 +55,14 @@ input {
   padding: 1.0rem;
   border: 1px solid #ccc;
   border-radius: 10px;
-  width: 100%;
+  width: 45%;
   box-sizing: border-box;
-  font-size: 22px;
+  font-size: 25px;
+  text-align: center;
+  margin-left: 140px;
+  font-weight: bold;
 }
+
 
 form button {
   background-color: #ccff00;
