@@ -2,15 +2,9 @@ import React, { useState } from "react";
 import CriarSecao from "./componentes/CriarSecao";
 import Login from "./componentes/Login";
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
-
-function gerarStringAleatoria(tamanho) {
-  let caracteres = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  let resultado = '';
-  for (let i = 0; i < tamanho; i++) {
-    resultado += caracteres.charAt(Math.floor(Math.random() * caracteres.length));
-  }
-  return resultado;
-}
+import Menu from "./componentes/Menu";
+import { gerarStringAleatoria } from "./componentes/Utils";
+import Index from "./componentes/";
 
 function App() {
   const [randomNumber, setNumeroAleatorio] = useState("");
@@ -26,23 +20,11 @@ function App() {
   return (
     <BrowserRouter>
       <div className='App'>
-        <div className="nav-container">
-          <div className="nav-menu">
-            <nav>
-              <ul>
-                <li>
-                  <Link to="/login">Login</Link>
-                </li>
-              </ul>
-              <ul>
-                <li>
-                  <Link to="/criarsecao">Criar Seção</Link>
-                </li>
-              </ul>
-            </nav>
-          </div>
+      <div className="logo-container-menu">
+            <h1>Planning Voter</h1>
         </div>
-
+      <Menu/>
+      {/* <Index/> */}
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/criarsecao" element={<CriarSecao gerarStringAleatoria={gerarStringAleatoria} gerarNumeroAleatorio={gerarNumeroAleatorio} />} />
