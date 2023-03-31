@@ -110,6 +110,7 @@ nav {
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
+  margin-top: 50px;
 }
 
 @media (max-width: 600px) {
@@ -158,4 +159,22 @@ nav li {
 /* Define a cor do item do menu ativo */
 nav li.active a {
   color: #fff;
+}
+
+.logo-container-menu h1{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  color: aliceblue;
+  font-size: 50px;
+  margin-top: -20px;
+}
+
+
+.App {
+  display: flex;
+  flex-direction: column-reverse;
+  align-content: space-around;
+  flex-wrap: wrap;
 }
