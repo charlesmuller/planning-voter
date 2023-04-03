@@ -2,7 +2,7 @@ import React from "react";
 import "../App.css";
 
 
-function Index() {
+function Start() {
     return (
         <div className="logo-container-menu">
             <h1>Planning Voter</h1>
@@ -10,4 +10,4 @@ function Index() {
     );
 }
 
-export default Index;
+export default Start;
