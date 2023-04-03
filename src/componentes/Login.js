@@ -1,9 +1,10 @@
-import React, { Component } from "react";
 import "../App.css";
+import Menu from "./Menu";
 
-class Login extends Component {
-    render() {
-        return (
+function Login() {
+    return (
+        <div>
+            <Menu />
             <div className="usuario-container">
                 <form>
                     <h1>Acessar Seção de Planning</h1>
@@ -15,8 +16,8 @@ class Login extends Component {
                     <button type="submit">Entrar</button>
                 </form>
             </div>
-        )
-    }
+        </div>
+    )
 }
 
 export default Login;
