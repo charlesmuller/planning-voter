@@ -1,10 +1,9 @@
-import React from "react";
-import "../App.css"
-import Menu from "./Menu";
+import "./CriarSecao.css"
+import Menu from "../Menu/Menu";
 
-function CriarSecao({ gerarStringAleatoria, gerarNumeroAleatorio }) {
+function CriarSecao({ gerarStringAleatoria, gerarNumeroAleatorio}) {
     return (
-        <div>
+        <div className="criar-container">
             <Menu/>
             <div className="secao-container">
                 <form>
