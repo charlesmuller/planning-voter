@@ -1,0 +1,18 @@
+.usuario-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 800px;
+    color: aliceblue;
+}
+
+.usuario-container form div label {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 20px;
+}
+
+.login-container {
+    max-height: 100vh;
+}

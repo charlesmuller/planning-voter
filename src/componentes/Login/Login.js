@@ -1,9 +1,9 @@
-import "../App.css";
-import Menu from "./Menu";
+import "./Login.css";
+import Menu from "../Menu/Menu";
 
 function Login() {
     return (
-        <div>
+        <div className="login-container">
             <Menu />
             <div className="usuario-container">
                 <form>

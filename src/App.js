@@ -1,10 +1,9 @@
 import React, { useState } from "react";
-import CriarSecao from "./componentes/CriarSecao";
-import Login from "./componentes/Login";
+import CriarSecao from "./componentes/CriarSecao/CriarSecao";
+import Login from "./componentes/Login/Login";
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
-import Menu from "./componentes/Menu";
-import { gerarStringAleatoria } from "./componentes/Utils";
-import Start from "./componentes/Start";
+import { gerarStringAleatoria } from "./componentes/Utils/Utils";
+import Start from "./componentes/Start/Start";
 
 function App() {
   const [randomNumber, setNumeroAleatorio] = useState("");
@@ -21,13 +20,9 @@ function App() {
     <BrowserRouter>
       <div className='App'>
         <Start/>
-        <div className="logo-container-menu">
-          <h1>Planning Voter</h1>
-        </div>
-        <Menu />
         <Routes>
           <Route path="/login" element={<Login />} />
-          <Route path="/criarsecao" element={<CriarSecao gerarStringAleatoria={gerarStringAleatoria} gerarNumeroAleatorio={gerarNumeroAleatorio} />} />
+          <Route path="/criarsecao" element={<CriarSecao gerarStringAleatoria={gerarStringAleatoria} gerarNumeroAleatorio={gerarNumeroAleatorio}/>} />
         </Routes>
       </div>
     </BrowserRouter>
