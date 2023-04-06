@@ -1,20 +1,56 @@
 version: "3"  # Versão do Docker Compose
 
 services:
-  planning-voter-web:  # Nome do serviço
-    build: .  # Caminho para o Dockerfile
+  planning-voter-web:  # Nome do serviço da aplicação web
+    build: .  # Caminho para o Dockerfile da aplicação web
     ports:
-      - "3000:3000"  # Porta que será exposta para acessar a aplicação
+      - "3000:3000"  # Porta que será exposta para acessar a aplicação web
     volumes:
-      - .:/app  # Mapeamento do diretório local para o diretório do container
+      - .:/app  # Mapeamento do diretório local para o diretório do container da aplicação web
     depends_on:
-      - api  # Dependência com outro serviço
+      - api-laravel  # Dependência com outro serviço, no caso, o serviço da API
+    environment:
+      - REACT_APP_API_URL=http://api:8000 # Configuração da URL da API utilizada pela aplicação web
+    command: npm start  # Comando para iniciar a aplicação web
 
-  api:  # Nome do serviço
-    image: nginx:alpine  # Imagem a ser usada
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro  # Mapeamento do arquivo de configuração do Nginx
-      - ./build:/usr/share/nginx/html:ro  # Mapeamento do diretório de build da aplicação
+  api-laravel:  # Nome do serviço da API
+    build:
+      context: ./api
+      dockerfile: Dockerfile
     ports:
-      - "8080:80"  # Porta que será exposta para acessar a API
+    - "8000:8000"  # Porta que será exposta para acessar a API
+    depends_on:
+    - bancodedados  # Dependência com o serviço do banco de dados
+    volumes:
+    - ./api:/app  # Mapeamento do diretório local para o diretório do container da API
+    command: php artisan serve --host=0.0.0.0 --port=8000  # Comando para iniciar a API
 
+  bancodedados:  # Nome do serviço do banco de dados
+    image: mysql:8.0  # Imagem utilizada para o serviço do banco de dados
+    environment:
+      MYSQL_ROOT_PASSWORD: root  # Senha do usuário root do MySQL
+      MYSQL_DATABASE: planningvoter  # Nome do banco de dados a ser criado
+      MYSQL_USER: planningvoter  # Nome do usuário do MySQL
+      MYSQL_PASSWORD: planningvoter  # Senha do usuário do MySQL
+    volumes:
+      - ./mysql-data:/var/lib/mysql  # Mapeamento do diretório local para o diretório do container do banco de dados
+
+  phpmyadmin:  # Nome do serviço do phpMyAdmin
+    image: phpmyadmin/phpmyadmin:latest  # Imagem utilizada para o serviço do phpMyAdmin
+    environment:
+      PMA_HOST: db  # Configuração do host do MySQL utilizado pelo phpMyAdmin
+      MYSQL_ROOT_PASSWORD: root  # Senha do usuário root do MySQL
+    ports:
+      - "8080:80"  # Porta que será exposta para acessar o phpMyAdmin
+    depends_on:
+      - bancodedados  # Dependência com o serviço do banco de dados
+
+  webserver:  # Nome do serviço do servidor web
+    image: nginx:alpine  # Imagem utilizada para o serviço do servidor web
+    ports:
+      - "80:80"  # Porta que será exposta para acessar o servidor web
+      - "443:443"  # Porta que será exposta para acessar o servidor web com HTTPS
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro  # Mapeamento do diretório local para o diretório de configuração do nginx
+      - ./certs:/etc/ssl/certs  # Mapeamento do diretório local para o diretório de certificados SSL
+      - ./build:/usr/share/nginx/html  # Mapeamento do diret
