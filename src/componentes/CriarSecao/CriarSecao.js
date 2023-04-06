@@ -1,5 +1,6 @@
 import "./CriarSecao.css"
 import Menu from "../Menu/Menu";
+import Botao from "../Botao/Botao";
 
 function CriarSecao({ gerarStringAleatoria, gerarNumeroAleatorio}) {
     return (
@@ -19,7 +20,7 @@ function CriarSecao({ gerarStringAleatoria, gerarNumeroAleatorio}) {
                         />
                     </div>
 
-                    <button onClick={gerarNumeroAleatorio}>Gerar link de Seção</button>
+                    <Botao texto="Gerar URL"/>
                 </form>
             </div>
         </div>
