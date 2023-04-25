@@ -7,23 +7,9 @@ services:
       - "3000:3000"  # Porta que será exposta para acessar a aplicação web
     volumes:
       - .:/app  # Mapeamento do diretório local para o diretório do container da aplicação web
-    depends_on:
-      - api-laravel  # Dependência com outro serviço, no caso, o serviço da API
     environment:
       - REACT_APP_API_URL=http://api:8000 # Configuração da URL da API utilizada pela aplicação web
     command: npm start  # Comando para iniciar a aplicação web
-
-  api-laravel:  # Nome do serviço da API
-    build:
-      context: ./api
-      dockerfile: Dockerfile
-    ports:
-    - "8000:8000"  # Porta que será exposta para acessar a API
-    depends_on:
-    - bancodedados  # Dependência com o serviço do banco de dados
-    volumes:
-    - ./api:/app  # Mapeamento do diretório local para o diretório do container da API
-    command: php artisan serve --host=0.0.0.0 --port=8000  # Comando para iniciar a API
 
   bancodedados:  # Nome do serviço do banco de dados
     image: mysql:8.0  # Imagem utilizada para o serviço do banco de dados
@@ -51,6 +37,6 @@ services:
       - "80:80"  # Porta que será exposta para acessar o servidor web
       - "443:443"  # Porta que será exposta para acessar o servidor web com HTTPS
     volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro  # Mapeamento do diretório local para o diretório de configuração do nginx
+      - ./docker/nginx.conf:/etc/nginx/nginx.conf:ro  # Mapeamento do diretório local para o diretório de configuração do nginx
       - ./certs:/etc/ssl/certs  # Mapeamento do diretório local para o diretório de certificados SSL
       - ./build:/usr/share/nginx/html  # Mapeamento do diret

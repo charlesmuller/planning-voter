@@ -1,0 +1,10 @@
+{
+    "name": "planningvoter/app",
+    "description": "Aplicação criada para auxilio nas votações de plannings",
+    "type": "project",
+    "require": {
+        "php": "^8.0",
+        "laravel/framework": "^8.0"
+    },
+    "license": "MIT"
+}
