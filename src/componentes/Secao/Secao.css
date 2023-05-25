@@ -1,0 +1,28 @@
+.secao-main {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+}
+
+.secao-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 10%;
+}
+
+.secao-botao-clicado {
+    display: flex;
+    background-color: #CCFF00;
+    color: black;
+    padding: 50px 0px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 22px;
+    font-weight: bold;
+    margin: 30px 0px;
+    justify-content: center;
+    width: 50%;
+    align-items: center;
+}

@@ -1,5 +1,7 @@
 import "./Login.css";
 import Menu from "../Menu/Menu";
+import Botao from "../Botao/Botao";
+
 
 function Login() {
     return (
@@ -13,7 +15,7 @@ function Login() {
                         <input type="email" id="email" name="email" />
                     </div>
 
-                    <button type="submit">Entrar</button>
+                    <Botao type="submit" texto="Entrar" />
                 </form>
             </div>
         </div>

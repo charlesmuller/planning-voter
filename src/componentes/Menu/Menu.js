@@ -19,6 +19,11 @@ function Menu() {
                                 <Link to={'/criarsecao'}>Criar Seção</Link>
                             </li>
                         </ul>
+                        <ul>
+                            <li>
+                                <Link to={'/secao'}>Seção</Link>
+                            </li>
+                        </ul>
                     </nav>
                 </div>
             </div>
