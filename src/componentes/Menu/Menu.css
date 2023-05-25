@@ -6,13 +6,6 @@
     margin-top: 50px;
 }
 
-@media (max-width: 600px) {
-    .nav-container {
-        flex-direction: column;
-        padding: 20px 0;
-    }
-}
-
 .nav-menu {
     margin: 0 auto;
 }
@@ -63,4 +56,15 @@ nav li.active a {
     font-size: 50px;
     margin-top: -20px;
     max-height: 100vh;
+}
+
+.link-ativo {
+    color: #e60f0f;
+}
+
+@media (max-width: 600px) {
+    .nav-container {
+        flex-direction: column;
+        padding: 20px 0;
+    }
 }
