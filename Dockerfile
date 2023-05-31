@@ -7,6 +7,9 @@ WORKDIR /app
 # Copia o package.json e o package-lock.json para o container
 COPY package*.json ./
 
+# Instala o pacote react-scripts globalmente
+RUN npm install -g react-scripts
+
 # Instala as dependências do projeto dentro do container
 RUN npm install
 

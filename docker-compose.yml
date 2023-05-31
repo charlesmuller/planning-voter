@@ -7,6 +7,7 @@ services:
       - "3000:3000"  # Porta que será exposta para acessar a aplicação web
     volumes:
       - .:/app  # Mapeamento do diretório local para o diretório do container da aplicação web
+      - /app/node_modules
     environment:
       - REACT_APP_API_URL=http://api:8000 # Configuração da URL da API utilizada pela aplicação web
     command: npm start  # Comando para iniciar a aplicação web
