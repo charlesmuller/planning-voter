@@ -2,12 +2,15 @@ import './Botao.css';
 import React, { useState } from "react";
 
 const Botao = (props) => {
-    const [foiClicado, setFoiClicado] = useState(false);
+    const [foiClicado, setFoiClicado, texto] = useState(false);
 
     const handleClick = () => {
-        const novoValor = !foiClicado;
-        setFoiClicado(novoValor);
-        props.onClicadoChange(novoValor);
+        const condicao = !foiClicado
+        // console.log('!foiClicado',!foiClicado, props.texto)
+        setFoiClicado(condicao, props.texto)
+        // console.log('setfoiclicado', novoValor)
+        props.onClicadoChange(condicao, props.texto)
+        // console.log('props.onClicadoChange', novoValor, props.texto)
     }
 
     return (

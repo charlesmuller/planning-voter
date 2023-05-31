@@ -1,13 +1,16 @@
-import "./Secao.css";
-import Menu from "../Menu/Menu";
-import Botao from "../Botao/Botao";
-import { useState } from "react";
+import "./Secao.css"
+import Menu from "../Menu/Menu"
+import Botao from "../Botao/Botao"
+import { useState } from "react"
 
 function Secao() {
-    const [foiClicado, setFoiClicado] = useState(false);
+    const [foiClicado, setFoiClicado] = useState(false)
+    const [texto, setTexto] = useState('')
 
-    const handleClicadoChange = (valor) => {
-        setFoiClicado(valor);
+    const handleClicadoChange = (condicao, texto) => {
+        console.log('handler secao', condicao, texto)
+        setFoiClicado(condicao)
+        setTexto(texto)
     }
 
     return (
@@ -25,7 +28,7 @@ function Secao() {
             <div className="secao-botao-clicado">
                 {foiClicado && (
                     <div>
-                        O valor de !foiClicado é: {String(foiClicado)}
+                        O valor é: {String(texto)}
                     </div>
                 )}
             </div>
