@@ -5,12 +5,14 @@ const Botao = (props) => {
     const [foiClicado, setFoiClicado] = useState(false);
 
     const handleClick = () => {
-        setFoiClicado(!foiClicado);
+        const novoValor = !foiClicado;
+        setFoiClicado(novoValor);
+        props.onClicadoChange(novoValor);
     }
 
     return (
-        <button 
-            className={ `botao ${foiClicado ? 'foiClicado' : ''}`}
+        <button
+            className={`botao ${foiClicado ? 'foiClicado' : ''}`}
             onClick={handleClick}
         >
             <span>{props.texto}</span>

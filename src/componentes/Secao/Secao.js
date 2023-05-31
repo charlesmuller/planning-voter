@@ -4,30 +4,30 @@ import Botao from "../Botao/Botao";
 import { useState } from "react";
 
 function Secao() {
-    const [botaoClicado, setBotaoClicado] = useState([])
+    const [foiClicado, setFoiClicado] = useState(false);
 
-    const adicionarBotaoClicado = (texto) => {
-        console.log(!botaoClicado, 'foi clicado')
-
-        setBotaoClicado([...botaoClicado, texto])
+    const handleClicadoChange = (valor) => {
+        setFoiClicado(valor);
     }
 
     return (
         <div className="secao-main">
             <Menu />
             <div className="secao-content">
-                <Botao texto="1" onClick={() => adicionarBotaoClicado("1")} />
-                <Botao texto="2" />
-                <Botao texto="3" />
-                <Botao texto="5" />
-                <Botao texto="8" />
-                <Botao texto="13" />
-                <Botao texto="21" />
+                <Botao texto="1" foiClicado={foiClicado} onClicadoChange={handleClicadoChange} />
+                <Botao texto="2" foiClicado={foiClicado} onClicadoChange={handleClicadoChange} />
+                <Botao texto="3" foiClicado={foiClicado} onClicadoChange={handleClicadoChange} />
+                <Botao texto="5" foiClicado={foiClicado} onClicadoChange={handleClicadoChange} />
+                <Botao texto="8" foiClicado={foiClicado} onClicadoChange={handleClicadoChange} />
+                <Botao texto="13" foiClicado={foiClicado} onClicadoChange={handleClicadoChange} />
+                <Botao texto="21" foiClicado={foiClicado} onClicadoChange={handleClicadoChange} />
             </div>
             <div className="secao-botao-clicado">
-                {botaoClicado.map((texto, index) => (
-                    <span key={index}>{texto}</span>
-                ))}
+                {foiClicado && (
+                    <div>
+                        O valor de !foiClicado é: {String(foiClicado)}
+                    </div>
+                )}
             </div>
         </div>
     )
