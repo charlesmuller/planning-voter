@@ -16,7 +16,7 @@ function App() {
     const newString = gerarStringAleatoria(10);
     setStringAleatoria(newString);
   }
-
+  
   return (
     <BrowserRouter>
       <div className='App'>

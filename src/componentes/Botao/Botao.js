@@ -6,12 +6,11 @@ const Botao = (props) => {
 
     const handleClick = () => {
         const condicao = !foiClicado
-        // console.log('!foiClicado',!foiClicado, props.texto)
         setFoiClicado(condicao, props.texto)
-        // console.log('setfoiclicado', novoValor)
+        console.log(props.texto)
         props.onClicadoChange(condicao, props.texto)
-        // console.log('props.onClicadoChange', novoValor, props.texto)
-    }
+        props.onListaUsuarios(props.texto)
+    }     
 
     return (
         <button
@@ -23,4 +22,4 @@ const Botao = (props) => {
     )
 }
 
-export default Botao
+export default Botao;
