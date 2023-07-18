@@ -9,8 +9,8 @@ function Secao() {
     const [usuariosAcao, setUsuariosAcao] = useState([])
 
 
-    const handleClicadoChange = (condicao, texto) => {
-        setFoiClicado(condicao)
+    const handleClickChange = (mostraTexto, texto) => {
+        setFoiClicado(mostraTexto)
         setTexto(texto)
     }
 
@@ -22,13 +22,13 @@ function Secao() {
         <div className="secao-main">
             <Menu />
             <div className={`secao-content ${foiClicado ? 'secao-expanded' : ''}`}>
-                <Botao texto="1" foiClicado={foiClicado} onClicadoChange={handleClicadoChange} />
-                <Botao texto="2" foiClicado={foiClicado} onClicadoChange={handleClicadoChange} />
-                <Botao texto="3" foiClicado={foiClicado} onClicadoChange={handleClicadoChange} />
-                <Botao texto="5" foiClicado={foiClicado} onClicadoChange={handleClicadoChange} />
-                <Botao texto="8" foiClicado={foiClicado} onClicadoChange={handleClicadoChange} />
-                <Botao texto="13" foiClicado={foiClicado} onClicadoChange={handleClicadoChange} />
-                <Botao texto="21" foiClicado={foiClicado} onClicadoChange={handleClicadoChange} />
+                <Botao texto="1" foiClicado={foiClicado} onClickChange={handleClickChange} />
+                {/*<Botao texto="2" foiClicado={foiClicado} onClickChange={handleClickChange} />*/}
+                {/*<Botao texto="3" foiClicado={foiClicado} onClickChange={handleClickChange} />*/}
+                {/*<Botao texto="5" foiClicado={foiClicado} onClickChange={handleClickChange} />*/}
+                {/*<Botao texto="8" foiClicado={foiClicado} onClickChange={handleClickChange} />*/}
+                {/*<Botao texto="13" foiClicado={foiClicado} onClickChange={handleClickChange} />*/}
+                {/*<Botao texto="21" foiClicado={foiClicado} onClickChange={handleClickChange} />*/}
             </div>
             <div className={`secao-botao-clicado ${foiClicado ? 'secao-expanded' : ''}`}>
                 {foiClicado && (
@@ -37,9 +37,9 @@ function Secao() {
                     </div>
                 )}
             </div>
-            <div className="secao-mostrar">
-                <Botao texto="Mostrar Votos" onClicadoChange={handleClicadoChange} onListaUsuarios={handleListaUsuarios} />
-            </div>
+            {/*<div className="secao-mostrar">*/}
+            {/*    <Botao texto="Mostrar Votos" onClicadoChange={handleClicadoChange} onListaUsuarios={handleListaUsuarios} />*/}
+            {/*</div>*/}
             <div className="secao-votos">
                 {usuariosAcao.length > 0 && (
                     <div>
