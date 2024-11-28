@@ -9,17 +9,16 @@ function Secao() {
     const [texto, setTexto] = useState('')
     const [usuariosAcao, setUsuariosAcao] = useState([])
     const [votos, setVotos] = useState({}) // Armazena os votos de todos os usuários
+    const [usuario, setUsuario] = useState("Usuário1"); // Defina um nome para o usuário, pode ser dinâmico
 
     useEffect(() => {
-        // Escuta os votos de outros usuários
         socket.on('voto', (voto) => {
-            setVotos((prevVotos) => ({
-                ...prevVotos,
-                [voto.usuario]: voto.valor,
-            }));
+            // Adiciona os votos recebidos à lista de votos
+            setUsuariosAcao(prevState => [...prevState, voto.usuario]);
+            console.log(`Voto de ${voto.usuario}: ${voto.valor}`);
         });
-
-        // Limpeza ao sair do componente
+    
+        // Limpar o evento ao desmontar o componente
         return () => {
             socket.off('voto');
         };

@@ -24,3 +24,5 @@ yarn-error.log*
 mysql-data/
 docker/nginx.conf
 docker/php.ini 
+
+.idea/
