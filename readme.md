@@ -78,24 +78,6 @@ O **Planning Voter** é uma aplicação desenvolvida para votação em tempo rea
 3. **Docker**:
    O Docker é usado para criar containers que tornam a aplicação mais portável e fácil de executar em diferentes ambientes. O arquivo `docker-compose.yml` ajuda a orquestrar o serviço do frontend e do backend.
 
-## Estrutura do Projeto
-
-planning-voter/
-├── client/  
-│   ├── src/                     # Código fonte do frontend
-│   ├── public/                  # Arquivos públicos (ex: index.html)
-│   ├── package.json             # Dependências do frontend (React)
-│   ├── .gitignore               # Arquivo de ignore para o Git
-│
-├── server/  
-│   ├── server.js                # Arquivo principal do backend (Node.js)
-│   ├── package.json             # Dependências do backend
-│   ├── Dockerfile               # Dockerfile para containerização do backend
-│
-├── docker-compose.yml           # Arquivo de configuração do Docker Compose
-├── README.md                    # Arquivo de documentação do projeto
-└── .gitignore                   # Arquivo de ignore global para o Git
-
 
 ## Como Usar
 
