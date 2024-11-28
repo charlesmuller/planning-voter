@@ -1,0 +1,29 @@
+
+services:
+  # Serviço para o frontend (React)
+  planning-voter-web:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    command: npm start
+    depends_on:
+      - server # Aguarda o backend iniciar primeiro
+
+  # Serviço para o backend (Node.js)
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./server:/usr/src/app
+      - /usr/src/app/node_modules
+    environment:
+      NODE_ENV: development
+    command: npm start
