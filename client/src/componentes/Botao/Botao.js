@@ -2,45 +2,24 @@ import './Botao.css';
 import React, { useState } from "react";
 
 const Botao = (props) => {
-    const [foiClicado, setFoiClicado, texto] = useState(false);
-    const [clickedButton, setClickedButton] = useState(null);
+    const [foiClicado, setFoiClicado] = useState(false);
 
-    const handleClickButton = (buttonIndex) => {
-        setClickedButton(buttonIndex)
-        const mostraTexto = !foiClicado
-        setFoiClicado(mostraTexto, props.texto)
-        props.onClickChange(mostraTexto, props.texto)
-    };
-
-    const botoes = [
-        "Button 1",
-        "Button 2",
-        "Button 3",
-        "Button 4",
-        "Button 5"
-    ];
-
+    // Lidar com o clique do botão
     const handleClick = () => {
-        const mostraTexto = !foiClicado
-        setFoiClicado(mostraTexto, props.texto)
-        props.onClickChange(mostraTexto, props.texto)
-        // props.onListaUsuarios(props.texto)
-    }
+        if (props.onClickChange) {
+            // Se a função onClickChange for passada, chamamos ela (para /secao)
+            setFoiClicado(!foiClicado); // Alterna o estado de foiClicado
+            props.onClickChange(!foiClicado, props.texto); // Passa o estado e o texto para o componente pai
+        }
+        // Caso contrário, o botão age normalmente (para /login)
+    };
 
     return (
         <div>
-            {/*{botoes.map((buttonText, index) => (*/}
-            {/*    <button*/}
-            {/*        key={index}*/}
-            {/*        className={`custom-button ${clickedButton === index ? "clicked" : ""}`}*/}
-            {/*        onClick={() => handleClickButton(index)}*/}
-            {/*    >*/}
-            {/*        {buttonText}*/}
-            {/*    </button>*/}
-            {/*))}*/}
             <button
-                className={`botao ${foiClicado ? 'foiClicado' : ''}`}
-                onClick={handleClick}
+                className={`botao ${props.foiClicado ? 'secao-botao-clicado secao-expanded' : ''}`}
+                type={props.type || "button"}
+                onClick={props.onClickChange}
             >
                 <span>{props.texto}</span>
             </button>

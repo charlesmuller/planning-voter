@@ -12,7 +12,7 @@ services:
       - /app/node_modules
     command: npm start
     depends_on:
-      - server # Aguarda o backend iniciar primeiro
+      - server
 
   # Serviço para o backend (Node.js)
   server:

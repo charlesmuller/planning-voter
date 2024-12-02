@@ -2,22 +2,29 @@ import "./Secao.css"
 import Menu from "../Menu/Menu"
 import Botao from "../Botao/Botao"
 import socket from '../../comunication/socket';
-import { useState, useEffect} from "react"
+import { useState, useEffect } from "react"
 
 function Secao() {
+    const [botaoSelecionado, setBotaoSelecionado] = useState(null); // Armazena o texto do botão selecionado
     const [foiClicado, setFoiClicado] = useState(false)
     const [texto, setTexto] = useState('')
     const [usuariosAcao, setUsuariosAcao] = useState([])
     const [votos, setVotos] = useState({}) // Armazena os votos de todos os usuários
-    const [usuario, setUsuario] = useState("Usuário1"); // Defina um nome para o usuário, pode ser dinâmico
+    const [usuario, setUsuario] = useState("");
 
     useEffect(() => {
+        // Tenta pegar o nome do usuário do localStorage
+        const usuarioLogado = localStorage.getItem("usuario");
+        if (usuarioLogado) {
+            setUsuario(usuarioLogado);  // Atualiza o estado com o nome do usuário
+        }
+
         socket.on('voto', (voto) => {
             // Adiciona os votos recebidos à lista de votos
             setUsuariosAcao(prevState => [...prevState, voto.usuario]);
             console.log(`Voto de ${voto.usuario}: ${voto.valor}`);
         });
-    
+
         // Limpar o evento ao desmontar o componente
         return () => {
             socket.off('voto');
@@ -27,16 +34,26 @@ function Secao() {
     const handleVotacao = () => {
         // Envia o voto para o servidor
         const usuario = 'UsuarioX'; // Aqui você pode pegar o nome do usuário de algum lugar
-        socket.emit('voto', { usuario, valor: texto });
+        const novoVoto = { usuario, valor: texto };
+
+        socket.emit('voto', { usuario, valor: novoVoto });
 
         // Atualiza a lista de usuários que já votaram
         setUsuariosAcao((prev) => [...prev, usuario]);
+
+        setVotos((prev) => ({
+            ...prev,
+            [usuario]: novoVoto.valor,
+        }));
     };
 
-    const handleClickChange = (mostraTexto, texto) => {
-        setFoiClicado(mostraTexto)
-        setTexto(texto)
-    }
+    const handleClickChange = (textoBotao) => {
+        console.log(`Botão ${textoBotao}`);
+
+        setBotaoSelecionado(textoBotao); // Atualiza o botão selecionado
+        setTexto(textoBotao); // Atualiza o texto a ser exibido
+    };
+
 
     const handleListaUsuarios = (usuario) => {
         setUsuariosAcao([...usuariosAcao, usuario]);
@@ -45,17 +62,18 @@ function Secao() {
     return (
         <div className="secao-main">
             <Menu />
-            <div className={`secao-content ${foiClicado ? 'secao-expanded' : ''}`}>
-                <Botao texto="1" foiClicado={foiClicado} onClickChange={handleClickChange} />
-                <Botao texto="2" foiClicado={foiClicado} onClickChange={handleClickChange} />
-                {/*<Botao texto="3" foiClicado={foiClicado} onClickChange={handleClickChange} />*/}
-                {/*<Botao texto="5" foiClicado={foiClicado} onClickChange={handleClickChange} />*/}
-                {/*<Botao texto="8" foiClicado={foiClicado} onClickChange={handleClickChange} />*/}
-                {/*<Botao texto="13" foiClicado={foiClicado} onClickChange={handleClickChange} />*/}
-                {/*<Botao texto="21" foiClicado={foiClicado} onClickChange={handleClickChange} />*/}
+            <div className="secao-content">
+                {["1", "2", "3", "5", "8", "13", "21"].map((valor) => (
+                    <Botao
+                        key={valor}
+                        texto={valor}
+                        foiClicado={botaoSelecionado === valor} // Define se o botão está selecionado
+                        onClickChange={() => handleClickChange(valor)} // Passa o valor do botão clicado
+                    />
+                ))}
             </div>
-            <div className={`secao-botao-clicado ${foiClicado ? 'secao-expanded' : ''}`}>
-                {foiClicado && (
+            <div className="secao-botao-clicado">
+                {botaoSelecionado && (
                     <div>
                         O valor é: {String(texto)}
                     </div>
