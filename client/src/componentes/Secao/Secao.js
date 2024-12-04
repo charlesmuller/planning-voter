@@ -41,7 +41,14 @@ function Secao() {
             setMostrarVotos(true); // Atualiza para mostrar os votos
         });
 
+        // Atualiza os votos em tempo real
+        socket.on("atualizarVotos", (votosRecebidos) => {
+            console.log("Votos recebidos do servidor:", votosRecebidos);
+            setVotos(votosRecebidos); // Atualiza os votos no estado local
+        });
+
         return () => {
+            socket.off("atualizarVotos");
             socket.off("receberVotos");
             socket.off("usuariosLogados");
             socket.off("mostrarVotos");
@@ -111,7 +118,7 @@ function Secao() {
                         <li key={index}>
                             {user}
                             <span>
-                                {votos[user] ? " -> [votou]" : " -> [ não votou]"}
+                                {votos[user] ? " -> [votou]" : " -> [não votou]"}
                             </span>
                         </li>
                     ))}
@@ -122,12 +129,22 @@ function Secao() {
                     <Botao
                         key={valor}
                         texto={valor}
-                        foiClicado={botaoSelecionado === valor} // Define se o botão está selecionado
-                        onClickChange={() => handleClickChange(valor)} // Passa o valor do botão clicado
+                        foiClicado={botaoSelecionado === valor}
+                        onClickChange={() => handleClickChange(valor)}
                     />
                 ))}
             </div>
-            <div className={`secao-botao-clicado ${foiClicado ? 'secao-expanded' : ''}`}>
+            <div className={`secao-botao-clicado ${botaoSelecionado ? 'secao-expanded' : ''}`}>
+                {/* O valor é mostrado se o botão foi clicado */}
+                {botaoSelecionado && (
+                    <div className="secao-valor-clicado">
+                        O valor é: {String(texto)}
+                    </div>
+                )}
+            </div>
+
+            {/* Usando uma classe diferente para controle de visibilidade ou exibição */}
+            <div className={botaoSelecionado ? "secao-valor-exibido" : "secao-valor-escondido"}>
                 {botaoSelecionado && (
                     <div>
                         O valor é: {String(texto)}

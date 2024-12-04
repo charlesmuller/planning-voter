@@ -1,12 +1,17 @@
 import "./Login.css";
 import Menu from "../Menu/Menu";
 import Botao from "../Botao/Botao";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import socket from '../../comunication/socket';
 
 function Login() {
     const [usuario, setUsuario] = useState(""); // Para armazenar o valor do email
     const navigate = useNavigate(); // Hook para navegação
+
+    useEffect(() => {
+
+    }, []);
 
     // Função para lidar com o submit do formulário
     const handleLogin = (e) => {
