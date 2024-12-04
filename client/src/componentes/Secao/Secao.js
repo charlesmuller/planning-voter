@@ -3,6 +3,8 @@ import Menu from "../Menu/Menu"
 import Botao from "../Botao/Botao"
 import socket from '../../comunication/socket';
 import { useState, useEffect } from "react"
+import { useNavigate } from "react-router-dom";
+
 
 function Secao() {
     const [botaoSelecionado, setBotaoSelecionado] = useState(null); // Armazena o texto do botão selecionado
@@ -11,57 +13,110 @@ function Secao() {
     const [usuariosAcao, setUsuariosAcao] = useState([])
     const [votos, setVotos] = useState({}) // Armazena os votos de todos os usuários
     const [usuario, setUsuario] = useState("");
+    const [usuarios, setUsuarios] = useState([]); // Lista de usuários logados
+    const [mostrarVotos, setMostrarVotos] = useState(false); // Controla a exibição dos votos
 
     useEffect(() => {
-        // Tenta pegar o nome do usuário do localStorage
+        // Configurações iniciais
         const usuarioLogado = localStorage.getItem("usuario");
         if (usuarioLogado) {
-            setUsuario(usuarioLogado);  // Atualiza o estado com o nome do usuário
+            setUsuario(usuarioLogado);
+            socket.emit("usuarioLogado", { usuario: usuarioLogado });
         }
 
-        socket.on('voto', (voto) => {
-            // Adiciona os votos recebidos à lista de votos
-            setUsuariosAcao(prevState => [...prevState, voto.usuario]);
-            console.log(`Voto de ${voto.usuario}: ${voto.valor}`);
+        // Recebe votos do servidor
+        socket.on("receberVotos", (votosRecebidos) => {
+            console.log("Votos recebidos do servidor:", votosRecebidos); // Debug
+            setVotos(votosRecebidos);
         });
 
-        // Limpar o evento ao desmontar o componente
+        // Atualiza lista de usuários logados
+        socket.on("usuariosLogados", (usuariosLogados) => {
+            setUsuarios([...new Set(usuariosLogados)]); // Remove duplicatas
+        });
+
+        socket.on("mostrarVotos", (votosRecebidos) => {
+            console.log("Votos recebidos do servidor:", votosRecebidos); // Debug
+            setVotos(votosRecebidos); // Atualiza os votos com os recebidos do servidor
+            setMostrarVotos(true); // Atualiza para mostrar os votos
+        });
+
         return () => {
-            socket.off('voto');
+            socket.off("receberVotos");
+            socket.off("usuariosLogados");
+            socket.off("mostrarVotos");
         };
     }, []);
 
-    const handleVotacao = () => {
+
+    const handleVotacao = (textoBotao) => {
         // Envia o voto para o servidor
-        const usuario = 'UsuarioX'; // Aqui você pode pegar o nome do usuário de algum lugar
-        const novoVoto = { usuario, valor: texto };
+        if (!usuario) {
+            console.error("Nenhum usuário logado encontrado!");
+            return;
+        }
+        const novoVoto = { usuario, valor: textoBotao }; // Cria o objeto do voto
+        socket.emit('voto', novoVoto); // Envia o voto para o servidor
 
-        socket.emit('voto', { usuario, valor: novoVoto });
-
-        // Atualiza a lista de usuários que já votaram
-        setUsuariosAcao((prev) => [...prev, usuario]);
-
+        // Atualiza localmente os votos
         setVotos((prev) => ({
             ...prev,
-            [usuario]: novoVoto.valor,
+            [usuario]: textoBotao,
         }));
+
+        console.log(`Voto enviado: ${JSON.stringify(novoVoto)}`);
     };
 
     const handleClickChange = (textoBotao) => {
-        console.log(`Botão ${textoBotao}`);
-
         setBotaoSelecionado(textoBotao); // Atualiza o botão selecionado
         setTexto(textoBotao); // Atualiza o texto a ser exibido
+        handleVotacao(textoBotao); // Envia o voto
     };
 
+    const handleMostrarVotos = () => {
+        console.log("Emitindo evento 'pedirVotos' para o servidor"); // Debug
+        socket.emit("pedirVotos"); // Solicita os votos ao servidor
+        setMostrarVotos(true); // Atualiza o estado para exibir os votos
+    };
 
-    const handleListaUsuarios = (usuario) => {
-        setUsuariosAcao([...usuariosAcao, usuario]);
-    }
+    const handleSair = () => {
+        if (!usuario) {
+            console.error("Nenhum usuário logado encontrado!");
+            return;
+        }
+
+        // Emite o evento para o servidor para remover o usuário da lista de logados
+        socket.emit("sair", { usuario });
+
+        // Limpa o usuário do estado local
+        localStorage.removeItem("usuario");
+        setUsuario(""); // Atualiza o estado do usuário para vazio
+
+        // Redireciona para a página de login usando useNavigate
+        navigate("/login"); // Substitua "/login" pela rota que deseja redirecionar
+    };
+
+    const navigate = useNavigate();
 
     return (
         <div className="secao-main">
             <Menu />
+            <Botao texto="Sair" onClickChange={handleSair} />
+
+            <div className="usuarios-logados">
+                <h1>Bem-vindo, {usuario}</h1>
+                <h2>Usuários Logados:</h2>
+                <ul>
+                    {usuarios.map((user, index) => (
+                        <li key={index}>
+                            {user}
+                            <span>
+                                {votos[user] ? " -> [votou]" : " -> [ não votou]"}
+                            </span>
+                        </li>
+                    ))}
+                </ul>
+            </div>
             <div className="secao-content">
                 {["1", "2", "3", "5", "8", "13", "21"].map((valor) => (
                     <Botao
@@ -72,23 +127,26 @@ function Secao() {
                     />
                 ))}
             </div>
-            <div className="secao-botao-clicado">
+            <div className={`secao-botao-clicado ${foiClicado ? 'secao-expanded' : ''}`}>
                 {botaoSelecionado && (
                     <div>
                         O valor é: {String(texto)}
                     </div>
                 )}
             </div>
-            {/* <div className="secao-mostrar">
-               <Botao texto="Mostrar Votos" onClicadoChange={handleClcadoChange} onListaUsuarios={handleListaUsuarios} />
-            </div> */}
             <div className="secao-votos">
-                {usuariosAcao.length > 0 && (
+                <div className="secao-mostrar">
+                    <Botao texto="Mostrar Votos" onClickChange={handleMostrarVotos} />
+                </div>
+
+                {mostrarVotos && Object.keys(votos).length > 0 && (
                     <div>
-                        Usuários que realizaram a ação:
+                        <h3>Votos dos Usuários:</h3>
                         <ul>
-                            {usuariosAcao.map((usuario, index) => (
-                                <li key={index}>{usuario}</li>
+                            {usuarios.map((user, index) => (
+                                <li key={index}>
+                                    {user}: {votos[user] || "Ainda não votou"}
+                                </li>
                             ))}
                         </ul>
                     </div>

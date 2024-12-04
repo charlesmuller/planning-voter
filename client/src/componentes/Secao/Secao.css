@@ -53,3 +53,18 @@
 .secao-mostrar{
     margin-top: 30px;
 }
+
+.usuarios-logados {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: #CCFF00;
+    color: black;
+    padding: 50px 0px;
+    border: none;
+    border-radius: 10px;
+    font-size: 22px;
+    font-weight: bold;
+    margin-top: 30px;
+}

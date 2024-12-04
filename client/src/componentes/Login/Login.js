@@ -33,9 +33,9 @@ function Login() {
                     <div className="input-container">
                         <label>Digite seu usuário</label>
                         <input
-                            type="email"
-                            id="email"
-                            name="email"
+                            type="text"
+                            id="text"
+                            name="text"
                             value={usuario}
                             onChange={(e) => setUsuario(e.target.value)} // Atualiza o estado com o input
                         />
