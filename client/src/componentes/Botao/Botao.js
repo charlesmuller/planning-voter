@@ -6,9 +6,8 @@ const Botao = (props) => {
 
     // Lidar com o clique do botão
     const handleClick = () => {
-        if (props.onClickChange) {
-            // Se a função onClickChange for passada, chamamos ela (para /secao)
-            setFoiClicado(!foiClicado); // Alterna o estado de foiClicado
+        if (!props.disabled && props.onClickChange) {
+            setFoiClicado(!foiClicado);
             props.onClickChange(!foiClicado, props.texto); // Passa o estado e o texto para o componente pai
         }
         // Caso contrário, o botão age normalmente (para /login)
@@ -17,14 +16,15 @@ const Botao = (props) => {
     return (
         <div>
             <button
-                className={`botao ${props.foiClicado ? 'secao-botao-clicado secao-expanded' : ''}`}
+                // className={`botao ${props.className || ''} ${foiClicado ? 'secao-botao-clicado secao-expanded' : ''}`}
+                className={`botao ${props.className || ''} ${foiClicado ? 'clicado' : ''}`}
                 type={props.type || "button"}
-                onClick={props.onClickChange}
+                onClick={handleClick}
+                disabled={props.disabled}
             >
                 <span>{props.texto}</span>
             </button>
         </div>
-
     )
 }
 

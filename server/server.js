@@ -116,6 +116,21 @@ io.on('connection', (socket) => {
         console.log('----------------');
     });
 
+    socket.on("novaRodada", () => {
+        // Limpa o conteúdo do objeto votos
+        for (const key in votos) {
+            delete votos[key];
+        }
+
+        console.log("Nova rodada iniciada. Votos resetados.");
+
+        // Emite para todos os clientes para limpar os estados de seleção
+        io.emit("resetarRodada");
+
+        // Atualiza os votos no frontend
+        io.emit("receberVotos", votos);
+    });
+
     // Desconexão do usuário
     socket.on("disconnect", () => {
         console.log("Usuário desconectado (evento disconnect)");
@@ -141,13 +156,61 @@ io.on('connection', (socket) => {
 
         console.log(`Usuários logados: ${usuariosLogados}`);
         console.log('----------------');
-        
+
         // Atualiza a lista de usuários logados
-        io.emit("usuariosLogados", usuariosLogados); 
+        io.emit("usuariosLogados", usuariosLogados);
         console.log('Atualizando lista de usuários logados (evento disconnect)');
     });
 
 });
+
+// Objeto para armazenar as seções e usuários associados
+const secoes = {};
+
+// Rota para gerar um link de seção
+app.post('/gerar-secao', (req, res) => {
+    const { usuario } = req.body;
+    const idSecao = `${Math.random().toString(36).substring(2, 10)}-${Date.now()}`;
+    
+    // Adiciona a seção no objeto com o criador como primeiro usuário
+    secoes[idSecao] = { usuarios: [usuario] };
+    console.log(`Seção criada: ${idSecao} pelo usuário ${usuario}`);
+    
+    res.json({ url: `http://localhost:3000/secao/${idSecao}` });
+});
+
+// Middleware para validar o acesso a uma seção
+io.use((socket, next) => {
+    const { idSecao, usuario } = socket.handshake.query;
+    if (!secoes[idSecao]) {
+        return next(new Error("Seção não encontrada!"));
+    }
+
+    // Adiciona o usuário à seção
+    if (!secoes[idSecao].usuarios.includes(usuario)) {
+        secoes[idSecao].usuarios.push(usuario);
+    }
+    console.log(`Usuário ${usuario} entrou na seção ${idSecao}`);
+    socket.join(idSecao);
+    next();
+});
+
+// Evento para enviar os usuários de uma seção
+io.on('connection', (socket) => {
+    const { idSecao } = socket.handshake.query;
+
+    socket.on('usuariosSecao', () => {
+        io.to(idSecao).emit('usuariosSecaoAtualizados', secoes[idSecao].usuarios);
+    });
+
+    // Remover o usuário ao desconectar
+    socket.on('disconnect', () => {
+        const { idSecao, usuario } = socket.handshake.query;
+        secoes[idSecao].usuarios = secoes[idSecao].usuarios.filter((u) => u !== usuario);
+        io.to(idSecao).emit('usuariosSecaoAtualizados', secoes[idSecao].usuarios);
+    });
+});
+
 
 // Inicia o servidor na porta 4000
 server.listen(4000, () => {

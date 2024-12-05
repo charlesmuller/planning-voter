@@ -15,6 +15,9 @@ function Secao() {
     const [usuario, setUsuario] = useState("");
     const [usuarios, setUsuarios] = useState([]); // Lista de usuários logados
     const [mostrarVotos, setMostrarVotos] = useState(false); // Controla a exibição dos votos
+    const todosVotaram = usuarios.every((user) => votos[user]);
+    const [mostrarVotosClicado, setMostrarVotosClicado] = useState(false);
+
 
     useEffect(() => {
         // Configurações iniciais
@@ -26,7 +29,7 @@ function Secao() {
 
         // Recebe votos do servidor
         socket.on("receberVotos", (votosRecebidos) => {
-            console.log("Votos recebidos do servidor:", votosRecebidos); // Debug
+            console.log("Votos recebidos do servidor:", votosRecebidos);
             setVotos(votosRecebidos);
         });
 
@@ -47,11 +50,18 @@ function Secao() {
             setVotos(votosRecebidos); // Atualiza os votos no estado local
         });
 
+        socket.on("resetarRodada", () => {
+            console.log("Recebido evento 'resetarRodada' do servidor");
+            setBotaoSelecionado(null); // Remove a seleção do botão
+            setMostrarVotos(false);    // Oculta os votos
+        });
+
         return () => {
             socket.off("atualizarVotos");
             socket.off("receberVotos");
             socket.off("usuariosLogados");
             socket.off("mostrarVotos");
+            socket.off("resetarEstado");
         };
     }, []);
 
@@ -82,9 +92,23 @@ function Secao() {
 
     const handleMostrarVotos = () => {
         console.log("Emitindo evento 'pedirVotos' para o servidor"); // Debug
-        socket.emit("pedirVotos"); // Solicita os votos ao servidor
+        socket.emit("pedirVotos");
         setMostrarVotos(true); // Atualiza o estado para exibir os votos
+        setMostrarVotosClicado(true); // Marca o botão como clicado
     };
+
+    const handleNovaRodada = () => {
+        // Emite o evento para o servidor iniciar a nova rodada
+        socket.emit("novaRodada");
+    
+        // Atualiza o estado local para refletir imediatamente no cliente
+        setVotos({});
+        setBotaoSelecionado(null);
+        setMostrarVotos(false);
+    
+        console.log("Nova rodada iniciada, votos resetados localmente.");
+    };
+    
 
     const handleSair = () => {
         if (!usuario) {
@@ -108,7 +132,15 @@ function Secao() {
     return (
         <div className="secao-main">
             <Menu />
-            <Botao texto="Sair" onClickChange={handleSair} />
+            <Botao
+                texto="Sair"
+                onClickChange={handleSair}
+            />
+            <Botao
+                texto="Nova Rodada"
+                onClickChange={handleNovaRodada}
+                className="nova-rodada" // Classe adicional para estilização, se necessário
+            />
 
             <div className="usuarios-logados">
                 <h1>Bem-vindo, {usuario}</h1>
@@ -131,30 +163,20 @@ function Secao() {
                         texto={valor}
                         foiClicado={botaoSelecionado === valor}
                         onClickChange={() => handleClickChange(valor)}
+                        className={botaoSelecionado === valor ? 'secao-botao-clicado secao-expanded' : ''}
                     />
                 ))}
             </div>
-            <div className={`secao-botao-clicado ${botaoSelecionado ? 'secao-expanded' : ''}`}>
-                {/* O valor é mostrado se o botão foi clicado */}
-                {botaoSelecionado && (
-                    <div className="secao-valor-clicado">
-                        O valor é: {String(texto)}
-                    </div>
-                )}
+            <div className="secao-mostrar">
+                <Botao
+                    texto="Mostrar Votos"
+                    onClickChange={handleMostrarVotos}
+                    disabled={!todosVotaram}
+                    className="mostrar-votos" // Classe adicional
+                />
             </div>
 
-            {/* Usando uma classe diferente para controle de visibilidade ou exibição */}
-            <div className={botaoSelecionado ? "secao-valor-exibido" : "secao-valor-escondido"}>
-                {botaoSelecionado && (
-                    <div>
-                        O valor é: {String(texto)}
-                    </div>
-                )}
-            </div>
             <div className="secao-votos">
-                <div className="secao-mostrar">
-                    <Botao texto="Mostrar Votos" onClickChange={handleMostrarVotos} />
-                </div>
 
                 {mostrarVotos && Object.keys(votos).length > 0 && (
                     <div>

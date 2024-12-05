@@ -71,3 +71,22 @@
 .secao-valor-clicado {
 
 }
+
+/* Estilo específico para o botão "Mostrar Votos" */
+.mostrar-votos {
+    background-color: #CCFF00;
+    color: black;
+    border: none;
+    padding: 15px 30px;
+    font-size: 20px;
+    cursor: pointer;
+    transition: 0.3s ease;
+}
+
+/* Quando o botão estiver desabilitado */
+.mostrar-votos:disabled {
+    background-color: #c9f57e;
+    color: black;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
