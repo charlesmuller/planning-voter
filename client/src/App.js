@@ -1,33 +1,30 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import CriarSecao from "./componentes/CriarSecao/CriarSecao";
 import Login from "./componentes/Login/Login";
 import Secao from "./componentes/Secao/Secao";
-import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
-import { gerarStringAleatoria } from "./componentes/Utils/Utils";
+import { Routes, Route, useNavigate } from 'react-router-dom'; // Apenas importando as partes necessárias
 import Start from "./componentes/Start/Start";
 
 function App() {
-  const [randomNumber, setNumeroAleatorio] = useState("");
-  const [randomString, setStringAleatoria] = useState("");
+  const navigate = useNavigate();
 
-  const gerarNumeroAleatorio = () => {
-    const newNumber = Math.floor(Math.random() * 100);
-    setNumeroAleatorio(newNumber);
-    const newString = gerarStringAleatoria(10);
-    setStringAleatoria(newString);
-  }
-  
+  useEffect(() => {
+    // Verificar se o usuário está logado (por exemplo, no localStorage)
+    const usuario = localStorage.getItem("usuario");
+    if (!usuario) {
+      // Redireciona para login se o usuário não estiver logado
+      navigate("/login");
+    }
+  }, []);
+
   return (
-    <BrowserRouter>
-      <div className='App'>
-        <Start/>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/criarsecao" element={<CriarSecao gerarStringAleatoria={gerarStringAleatoria} gerarNumeroAleatorio={gerarNumeroAleatorio}/>} />
-          <Route path="/secao" element={<Secao />} />
-        </Routes>
-      </div>
-    </BrowserRouter>
+    <div className='App'>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/criarsecao" element={<CriarSecao />} />
+        <Route path="/secao/:idSecao" element={<Secao />} />
+      </Routes>
+    </div>
   );
 }
 

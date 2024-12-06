@@ -13,6 +13,9 @@ RUN npm install
 # Copie o restante do código da aplicação
 COPY . .
 
+# Copie o arquivo .env.example para .env
+COPY .env.example .env
+
 # Exponha a porta em que o servidor irá rodar
 EXPOSE 4000
 

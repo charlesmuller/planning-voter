@@ -3,8 +3,7 @@ import Menu from "../Menu/Menu"
 import Botao from "../Botao/Botao"
 import socket from '../../comunication/socket';
 import { useState, useEffect } from "react"
-import { useNavigate } from "react-router-dom";
-
+import { useNavigate, useParams} from "react-router-dom";
 
 function Secao() {
     const [botaoSelecionado, setBotaoSelecionado] = useState(null); // Armazena o texto do botão selecionado
@@ -17,7 +16,8 @@ function Secao() {
     const [mostrarVotos, setMostrarVotos] = useState(false); // Controla a exibição dos votos
     const todosVotaram = usuarios.every((user) => votos[user]);
     const [mostrarVotosClicado, setMostrarVotosClicado] = useState(false);
-
+    const { idSecao } = useParams();
+    const navigate = useNavigate(); 
 
     useEffect(() => {
         // Configurações iniciais
@@ -56,6 +56,20 @@ function Secao() {
             setMostrarVotos(false);    // Oculta os votos
         });
 
+        const checkSecaoExistente = async () => {
+            const response = await fetch(`/validar-secao/${idSecao}`);
+            const data = await response.json();
+            if (data.valida) {
+                // Se a seção for válida, permite o acesso
+                console.log("Seção válida:", data.secao);
+            } else {
+                // Caso contrário, redireciona para uma página de erro ou login
+                navigate("/login");
+            }
+        };
+    
+        checkSecaoExistente();
+
         return () => {
             socket.off("atualizarVotos");
             socket.off("receberVotos");
@@ -63,7 +77,7 @@ function Secao() {
             socket.off("mostrarVotos");
             socket.off("resetarEstado");
         };
-    }, []);
+    }, [idSecao, navigate]);
 
 
     const handleVotacao = (textoBotao) => {
@@ -127,10 +141,9 @@ function Secao() {
         navigate("/login"); // Substitua "/login" pela rota que deseja redirecionar
     };
 
-    const navigate = useNavigate();
-
     return (
         <div className="secao-main">
+            <div>Seção ID: {idSecao}</div>;
             <Menu />
             <Botao
                 texto="Sair"

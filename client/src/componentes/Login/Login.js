@@ -2,33 +2,54 @@ import "./Login.css";
 import Menu from "../Menu/Menu";
 import Botao from "../Botao/Botao";
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import socket from '../../comunication/socket';
+import { useNavigate, useLocation } from "react-router-dom";
 
 function Login() {
     const [usuario, setUsuario] = useState(""); // Para armazenar o valor do email
     const navigate = useNavigate(); // Hook para navegação
+    const location = useLocation();
+    const [secaoUrl, setSecaoUrl] = useState("");
+    const { state } = location;
 
     useEffect(() => {
+        if (location.state?.urlSecao) {
+            console.log("URL da seção:", location.state.urlSecao);
+            setSecaoUrl(location.state.urlSecao); // Captura a URL da seção
+        }
+    }, [location]);
 
-    }, []);
+    const fetchSecaoUrl = async (usuario) => {
+        try {
+            const response = await fetch(`/api/getSecaoUrl?usuario=${usuario}`);
+            const data = await response.json();
+            if (data.secaoUrl) {
+                setSecaoUrl(data.secaoUrl); // Atualiza a URL da seção no estado
+            } else {
+                alert("URL da seção não encontrada!");
+            }
+        } catch (error) {
+            console.error("Erro ao buscar a URL da seção:", error);
+            alert("Erro ao recuperar a URL da seção.");
+        }
+    };
 
-    // Função para lidar com o submit do formulário
     const handleLogin = (e) => {
-        e.preventDefault(); // Previne o comportamento padrão de submit do formulário
-        // Aqui, você pode validar ou processar o email (por exemplo, se for um formato válido)
-        console.log("Usuário:", usuario);
-
+        e.preventDefault();
         if (usuario) {
-            // Armazenando o usuário no localStorage
-            localStorage.setItem('usuario', usuario);
+            console.log("URL da seção:", localStorage.getItem("secaoUrl"));
+            localStorage.setItem("usuario", usuario);
 
-            // Redirecionando para /secao
-            navigate("/secao");
+            // Redirecionar para a URL da seção
+            if (secaoUrl) {
+                navigate(secaoUrl);
+            } else {
+                alert("URL da seção não encontrada!");
+            }
         } else {
             alert("Por favor, digite um usuário.");
         }
     };
+
     return (
         <div className="login-container">
             <Menu />

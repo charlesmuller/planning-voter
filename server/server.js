@@ -6,6 +6,7 @@ const app = express();
 const server = http.createServer(app);
 const usuariosLogados = [];
 const votos = {};
+const secoesRoutes = require('./routes/secoes'); // Caminho para o arquivo de rotas
 
 const io = socketIo(server, {
     cors: {
@@ -21,6 +22,11 @@ app.use(cors());
 app.get('/', (req, res) => {
     res.send('Servidor WebSocket funcionando');
 });
+
+app.use(express.json()); // Middleware para tratar JSON no body das requisições
+
+// Registra as rotas de /server/routes/secoes.js
+app.use('/api', secoesRoutes);
 
 // Escutando novas conexões
 io.on('connection', (socket) => {
