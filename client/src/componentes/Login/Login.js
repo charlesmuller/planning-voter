@@ -10,41 +10,24 @@ function Login() {
     const location = useLocation();
     const [secaoUrl, setSecaoUrl] = useState("");
     const { state } = location;
+    const [idSecao, setIdSecao] = useState("");
 
     useEffect(() => {
-        if (location.state?.urlSecao) {
-            console.log("URL da seção:", location.state.urlSecao);
-            setSecaoUrl(location.state.urlSecao); // Captura a URL da seção
-        }
-    }, [location]);
+        const secaoId = new URLSearchParams(location.search).get("idSecao");
+        if (secaoId) {
+            setIdSecao(secaoId);
+        } else {
+            console.log("Nenhum ID de seção fornecido. Continuando sem ID.");
 
-    const fetchSecaoUrl = async (usuario) => {
-        try {
-            const response = await fetch(`/api/getSecaoUrl?usuario=${usuario}`);
-            const data = await response.json();
-            if (data.secaoUrl) {
-                setSecaoUrl(data.secaoUrl); // Atualiza a URL da seção no estado
-            } else {
-                alert("URL da seção não encontrada!");
-            }
-        } catch (error) {
-            console.error("Erro ao buscar a URL da seção:", error);
-            alert("Erro ao recuperar a URL da seção.");
         }
-    };
+    }, [location, navigate]);
 
     const handleLogin = (e) => {
         e.preventDefault();
         if (usuario) {
             console.log("URL da seção:", localStorage.getItem("secaoUrl"));
             localStorage.setItem("usuario", usuario);
-
-            // Redirecionar para a URL da seção
-            if (secaoUrl) {
-                navigate(secaoUrl);
-            } else {
-                alert("URL da seção não encontrada!");
-            }
+            navigate(`/secao/${idSecao}`, { state: { usuario } });
         } else {
             alert("Por favor, digite um usuário.");
         }
@@ -66,7 +49,6 @@ function Login() {
                             onChange={(e) => setUsuario(e.target.value)} // Atualiza o estado com o input
                         />
                     </div>
-
                     <Botao type="submit" texto="Entrar" />
                 </form>
             </div>

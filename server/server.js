@@ -7,6 +7,7 @@ const server = http.createServer(app);
 const usuariosLogados = [];
 const votos = {};
 const secoesRoutes = require('./routes/secoes'); // Caminho para o arquivo de rotas
+const secoes = {}; // Estrutura para armazenar usuários e votos por seção
 
 const io = socketIo(server, {
     cors: {
@@ -30,20 +31,38 @@ app.use('/api', secoesRoutes);
 
 // Escutando novas conexões
 io.on('connection', (socket) => {
-    console.log('Novo usuário conectado');
+    console.log('conectado server');
     console.log('----------------');
 
 
     // Evento para quando um usuário loga
     socket.on('usuarioLogado', (data) => {
-        const { usuario } = data;
+        const { usuario, idSecao } = data;
 
         console.log('Usuário conectado: ', usuario);
         console.log('----------------');
+
         // Verifica se o usuário já está na lista para evitar duplicações
         if (!usuariosLogados.includes(usuario)) {
             usuariosLogados.push(usuario);
         }
+
+        if (!secoes[idSecao]) {
+            secoes[idSecao] = { usuarios: [], votos: {} };
+        }
+
+        // Adiciona o usuário à seção, se ainda não estiver presente
+        if (!secoes[idSecao].usuarios.includes(usuario)) {
+            secoes[idSecao].usuarios.push(usuario);
+        }
+
+        console.log(`Usuário ${usuario} entrou na seção ${idSecao}`);
+        console.log(`Usuários na seção ${idSecao}: ${secoes[idSecao].usuarios}`);
+
+        // Atualiza os votos e usuários da seção específica
+        socket.join(idSecao); // Adiciona o socket ao "room" da seção
+        io.to(idSecao).emit('usuariosLogados', secoes[idSecao].usuarios);
+        socket.emit("atualizarVotos", secoes[idSecao].votos);
 
         console.log(`Usuários logados: ${usuariosLogados}`);
         console.log('----------------');
@@ -56,20 +75,22 @@ io.on('connection', (socket) => {
         // Emite para o usuário logado os votos atualizados
         socket.emit("atualizarVotos", votos);
         console.log(`Votos atualizados para os usuários logados (evento usuarioLogado): ${usuario}: ${JSON.stringify(votos)}`);
-        console.log('----------------');
+        console.log('------fim connection------');
     });
 
     // Escuta eventos de voto
     socket.on('voto', (voto) => {
-        // Atualiza o voto do usuário
-        votos[voto.usuario] = voto.valor;
-        console.log(`Voto recebido: ${JSON.stringify(voto)}`);
-        console.log('----------------');
+        const { usuario, valor, idSecao } = data;
 
-        // Emite os votos atualizados para todos os clientes
-        io.emit("atualizarVotos", votos);
-        console.log(`Votos atualizados (evento voto): ${JSON.stringify(votos)}`);
-        console.log('----------------');
+        // Verifica se a seção existe
+        if (secoes[idSecao]) {
+            secoes[idSecao].votos[usuario] = valor;
+
+            console.log(`Voto do usuário ${usuario} na seção ${idSecao}: ${valor}`);
+            io.to(idSecao).emit("atualizarVotos", secoes[idSecao].votos);
+            console.log('------fim voto------');
+
+        }
     });
 
     // Envia os votos existentes quando um novo cliente se conecta
@@ -87,11 +108,25 @@ io.on('connection', (socket) => {
         // Emite o evento para todos os clientes
         io.emit("mostrarVotos", votos);
         console.log("Votos enviados para todos os usuários: ", votos);
-        console.log('----------------');
+        console.log('------fim atualizarVotos------');
     });
 
     socket.on("sair", (data) => {
-        const { usuario } = data;
+        const { usuario, idSecao } = data;
+
+        if (secoes[idSecao]) {
+            // Remove o usuário da seção
+            const index = secoes[idSecao].usuarios.indexOf(usuario);
+            if (index !== -1) {
+                secoes[idSecao].usuarios.splice(index, 1);
+            }
+
+            if (votos[usuario]) {
+                delete secoes[idSecao].votos[usuario];
+                console.log(`Voto do usuário ${usuario} foi removido.`);
+                console.log('----------------');
+            }
+        }
 
         // Remove o usuário da lista de logados
         const index = usuariosLogados.indexOf(usuario);
@@ -102,44 +137,44 @@ io.on('connection', (socket) => {
             console.log('----------------');
         }
 
-        // Remove o voto do usuário que saiu
-        if (votos[usuario]) {
-            delete votos[usuario]; // Remove o voto do usuário
-            console.log(`Voto do usuário ${usuario} foi removido.`);
-            console.log('----------------');
-        }
-
         console.log(`Usuário ${usuario} saiu. Lista de logados: ${usuariosLogados}`);
         console.log('----------------');
 
         // Emite para todos os clientes a lista atualizada de usuários logados
-        io.emit("usuariosLogados", usuariosLogados);
-        console.log('emitindo lista de usuários logados (evento sair)');
+        io.to(idSecao).emit("usuariosLogados", usuariosLogados);
+        console.log(`Usuário ${usuario} saiu da seção ${idSecao}`);
         console.log('----------------');
+
         // Emite para todos os clientes a lista atualizada de votos
-        io.emit("atualizarVotos", votos)
+        io.to(idSecao).emit("atualizarVotos", secoes[idSecao].votos);
         console.log('emitindo lista de votos atualizados (evento sair)');
-        console.log('----------------');
+        console.log('------fim sair------');
+
     });
 
-    socket.on("novaRodada", () => {
+    socket.on("novaRodada", (idSecao) => {
         // Limpa o conteúdo do objeto votos
         for (const key in votos) {
             delete votos[key];
         }
 
-        console.log("Nova rodada iniciada. Votos resetados.");
+        if (secoes[idSecao]) {
 
-        // Emite para todos os clientes para limpar os estados de seleção
-        io.emit("resetarRodada");
+            console.log(`Nova rodada iniciada. Votos resetados. ${idSecao}`);
+            console.log('----------------');
+            
+            // Emite para todos os clientes para limpar os estados de seleção
+            io.to(idSecao).emit("resetarRodada");
 
-        // Atualiza os votos no frontend
-        io.emit("receberVotos", votos);
+            // Atualiza os votos no frontend
+            io.to(idSecao).emit("receberVotos", secoes[idSecao].votos);
+            console.log('------fim novaRodada------');
+        }
     });
 
     // Desconexão do usuário
     socket.on("disconnect", () => {
-        console.log("Usuário desconectado (evento disconnect)");
+        console.log("Iniciado evento disconnect");
         console.log('----------------');
         // Encontre o usuário desconectado baseado no socket.id
         const usuarioDesconectado = Object.keys(votos).find(
@@ -165,7 +200,8 @@ io.on('connection', (socket) => {
 
         // Atualiza a lista de usuários logados
         io.emit("usuariosLogados", usuariosLogados);
-        console.log('Atualizando lista de usuários logados (evento disconnect)');
+        console.log('Atualizando lista de usuários logados (evento disconnect- final)');
+        console.log('------fim disconnect------');
     });
 
 });

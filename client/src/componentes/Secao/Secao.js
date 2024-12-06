@@ -3,7 +3,7 @@ import Menu from "../Menu/Menu"
 import Botao from "../Botao/Botao"
 import socket from '../../comunication/socket';
 import { useState, useEffect } from "react"
-import { useNavigate, useParams} from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 
 function Secao() {
     const [botaoSelecionado, setBotaoSelecionado] = useState(null); // Armazena o texto do botão selecionado
@@ -17,14 +17,35 @@ function Secao() {
     const todosVotaram = usuarios.every((user) => votos[user]);
     const [mostrarVotosClicado, setMostrarVotosClicado] = useState(false);
     const { idSecao } = useParams();
-    const navigate = useNavigate(); 
+    const navigate = useNavigate();
+    const location = useLocation();
+
 
     useEffect(() => {
-        // Configurações iniciais
+        const secaoId = new URLSearchParams(location.search).get("idSecao");
         const usuarioLogado = localStorage.getItem("usuario");
-        if (usuarioLogado) {
+
+        console.log("ID da seção:", secaoId);
+        console.log("Usuário logado:", usuarioLogado);
+        
+        if (secaoId && usuarioLogado) {
+            // Enviar evento de login ao servidor
             setUsuario(usuarioLogado);
-            socket.emit("usuarioLogado", { usuario: usuarioLogado });
+            socket.emit('usuarioLogado', { usuario: usuarioLogado, idSecao: secaoId });
+
+            // Atualiza lista de usuários logados
+            socket.on("usuariosLogados", (usuariosLogados) => {
+                setUsuarios([...new Set(usuariosLogados)]);
+            });
+
+            // Atualiza os votos em tempo real
+            socket.on("atualizarVotos", (votosRecebidos) => {
+                console.log("Votos recebidos do servidor:", votosRecebidos);
+                setVotos(votosRecebidos); // Atualiza os votos no estado local
+            });
+        } else {
+            alert("Seção inválida ou não encontrada!");
+            navigate("/");
         }
 
         // Recebe votos do servidor
@@ -33,21 +54,10 @@ function Secao() {
             setVotos(votosRecebidos);
         });
 
-        // Atualiza lista de usuários logados
-        socket.on("usuariosLogados", (usuariosLogados) => {
-            setUsuarios([...new Set(usuariosLogados)]); // Remove duplicatas
-        });
-
         socket.on("mostrarVotos", (votosRecebidos) => {
             console.log("Votos recebidos do servidor:", votosRecebidos); // Debug
             setVotos(votosRecebidos); // Atualiza os votos com os recebidos do servidor
             setMostrarVotos(true); // Atualiza para mostrar os votos
-        });
-
-        // Atualiza os votos em tempo real
-        socket.on("atualizarVotos", (votosRecebidos) => {
-            console.log("Votos recebidos do servidor:", votosRecebidos);
-            setVotos(votosRecebidos); // Atualiza os votos no estado local
         });
 
         socket.on("resetarRodada", () => {
@@ -57,17 +67,13 @@ function Secao() {
         });
 
         const checkSecaoExistente = async () => {
-            const response = await fetch(`/validar-secao/${idSecao}`);
+            const response = await fetch(`/secao/${idSecao}`);
             const data = await response.json();
-            if (data.valida) {
-                // Se a seção for válida, permite o acesso
-                console.log("Seção válida:", data.secao);
-            } else {
-                // Caso contrário, redireciona para uma página de erro ou login
+            if (!data.valida) {
                 navigate("/login");
             }
         };
-    
+
         checkSecaoExistente();
 
         return () => {
@@ -114,15 +120,15 @@ function Secao() {
     const handleNovaRodada = () => {
         // Emite o evento para o servidor iniciar a nova rodada
         socket.emit("novaRodada");
-    
+
         // Atualiza o estado local para refletir imediatamente no cliente
         setVotos({});
         setBotaoSelecionado(null);
         setMostrarVotos(false);
-    
+
         console.log("Nova rodada iniciada, votos resetados localmente.");
     };
-    
+
 
     const handleSair = () => {
         if (!usuario) {

@@ -40,6 +40,15 @@ nav li {
     margin-right: 20px;
     margin-left: 20px;
     line-height: 50px;
+    background-color: #ccff00;
+    color: black;
+    padding: 0px 5px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 22px;
+    font-weight: bold;
+    margin: 0 10px;
 }
 
 /* Define a cor do item do menu ativo */

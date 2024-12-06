@@ -11,7 +11,7 @@ function Menu() {
                     <nav>
                         <ul>
                             <li>
-                                <Link to={'/criarsecao'}>Criar Seção</Link>
+                                {/* <Link to={'/criarsecao'}>Criar Seção</Link> */}
                             </li>
                         </ul>
                     </nav>

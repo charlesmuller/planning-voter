@@ -21,22 +21,15 @@ router.post('/criar-secao', (req, res) => {
 });
 
 // Validar se uma seção existe
-router.get('/validar-secao/:idSecao', (req, res) => {
+router.get('/secao/:idSecao', (req, res) => {
     const { idSecao } = req.params;
-    const query = 'SELECT * FROM secoes WHERE unique_link = ?';
 
-    db.query(query, [`/secao/${idSecao}`], (error, results) => {
-        if (error) {
-            console.error('Erro ao validar seção:', error);
-            return res.status(500).json({ error: 'Erro ao validar seção' });
+    db.query('SELECT * FROM secoes WHERE nome = ?', [idSecao], (error, results) => {
+        if (error || results.length === 0) {
+            return res.status(404).json({ error: "Seção não encontrada." });
         }
-        if (results.length > 0) {
-            return res.json({ valida: true, secao: results[0] });  // Retorna a seção encontrada
-        }
-        res.json({ valida: false });
+        res.json({ valida: true });
     });
 });
-
-
 
 module.exports = router;

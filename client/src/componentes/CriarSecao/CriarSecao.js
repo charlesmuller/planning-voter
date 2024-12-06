@@ -15,8 +15,9 @@ function CriarSecao() {
     const handleGerarURL = async () => {
         try {
             const response = await axios.post("http://localhost:4000/api/criar-secao");
+            const idSecao = response.data.idSecao;
             const urlBase = process.env.REACT_APP_URL_LOCAL || "http://localhost:3000"; // URL local
-            const urlCompleta = `${urlBase}/secao/${response.data.idSecao}`;
+            const urlCompleta = `${urlBase}/login?idSecao=${idSecao}`;
             setUrlSecao(urlCompleta);
             setLinkGerado(true);
         } catch (error) {
@@ -24,12 +25,6 @@ function CriarSecao() {
         }
     };
 
-    const handleLinkClick = () => {
-        if (urlSecao) {
-            navigate("/login", { state: { urlSecao } }); // Passa a URL da seção para a página de login
-        }
-    };
-    
     const handleCopy = () => {
         navigator.clipboard.writeText(urlSecao)
             .then(() => {
