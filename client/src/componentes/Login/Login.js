@@ -2,24 +2,18 @@ import "./Login.css";
 import Menu from "../Menu/Menu";
 import Botao from "../Botao/Botao";
 import { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useParams } from "react-router-dom";
 
 function Login() {
     const [usuario, setUsuario] = useState(""); // Para armazenar o valor do email
-    const navigate = useNavigate(); // Hook para navegação
-    const location = useLocation();
+    const navigate = useNavigate();
     const [secaoUrl, setSecaoUrl] = useState("");
-    const { state } = location;
-    const [idSecao, setIdSecao] = useState("");
+    const location = useLocation();
+    const idSecao = location.state?.idSecao;
 
     useEffect(() => {
-        const secaoId = new URLSearchParams(location.search).get("idSecao");
-        if (secaoId) {
-            setIdSecao(secaoId);
-        } else {
-            console.log("Nenhum ID de seção fornecido. Continuando sem ID.");
+        console.log("ID da seção no /login:", idSecao);
 
-        }
     }, [location, navigate]);
 
     const handleLogin = (e) => {

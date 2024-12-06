@@ -16,7 +16,7 @@ function CriarSecao() {
         try {
             const response = await axios.post("http://localhost:4000/api/criar-secao");
             const idSecao = response.data.idSecao;
-            const urlBase = process.env.REACT_APP_URL_LOCAL || "http://localhost:3000"; // URL local
+            const urlBase = process.env.REACT_APP_URL_LOCAL || "http://localhost:3000";
             const urlCompleta = `${urlBase}/login?idSecao=${idSecao}`;
             setUrlSecao(urlCompleta);
             setLinkGerado(true);

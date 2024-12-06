@@ -18,20 +18,23 @@ function Secao() {
     const [mostrarVotosClicado, setMostrarVotosClicado] = useState(false);
     const { idSecao } = useParams();
     const navigate = useNavigate();
-    const location = useLocation();
 
 
     useEffect(() => {
-        const secaoId = new URLSearchParams(location.search).get("idSecao");
         const usuarioLogado = localStorage.getItem("usuario");
-
-        console.log("ID da seção:", secaoId);
         console.log("Usuário logado:", usuarioLogado);
-        
-        if (secaoId && usuarioLogado) {
+        console.log("ID da seção:", idSecao);
+        if (!usuarioLogado || usuarioLogado.trim() === "") {
+            console.log("Redirecionando para login por falta de usuário logado...");
+            navigate("/login", { state: { idSecao } });
+            return; // Evita executar o restante do código no efeito
+        }
+
+
+        if (idSecao && usuarioLogado) {
             // Enviar evento de login ao servidor
             setUsuario(usuarioLogado);
-            socket.emit('usuarioLogado', { usuario: usuarioLogado, idSecao: secaoId });
+            socket.emit('usuarioLogado', { usuario: usuarioLogado, idSecao: idSecao });
 
             // Atualiza lista de usuários logados
             socket.on("usuariosLogados", (usuariosLogados) => {
@@ -66,16 +69,17 @@ function Secao() {
             setMostrarVotos(false);    // Oculta os votos
         });
 
+        
         const checkSecaoExistente = async () => {
             const response = await fetch(`/secao/${idSecao}`);
             const data = await response.json();
             if (!data.valida) {
-                navigate("/login");
+                navigate("/criarsecao");
             }
         };
 
         checkSecaoExistente();
-
+        
         return () => {
             socket.off("atualizarVotos");
             socket.off("receberVotos");
@@ -92,8 +96,10 @@ function Secao() {
             console.error("Nenhum usuário logado encontrado!");
             return;
         }
-        const novoVoto = { usuario, valor: textoBotao }; // Cria o objeto do voto
+        const novoVoto = { usuario, valor: textoBotao, idSecao };
+        console.log(`dados do voto antes de enviar ${JSON.stringify(novoVoto)}`);
         socket.emit('voto', novoVoto); // Envia o voto para o servidor
+
 
         // Atualiza localmente os votos
         setVotos((prev) => ({
@@ -111,15 +117,19 @@ function Secao() {
     };
 
     const handleMostrarVotos = () => {
-        console.log("Emitindo evento 'pedirVotos' para o servidor"); // Debug
-        socket.emit("pedirVotos");
+        console.log("Emitindo evento 'pedirVotos' para o servidor");
+
+        console.log("dados no mostrarvotos:", usuario, idSecao, votos);
+        socket.emit("pedirVotos", { usuario, idSecao, votos });
+
+
         setMostrarVotos(true); // Atualiza o estado para exibir os votos
         setMostrarVotosClicado(true); // Marca o botão como clicado
     };
 
     const handleNovaRodada = () => {
         // Emite o evento para o servidor iniciar a nova rodada
-        socket.emit("novaRodada");
+        socket.emit("novaRodada", { idSecao });
 
         // Atualiza o estado local para refletir imediatamente no cliente
         setVotos({});
@@ -144,7 +154,7 @@ function Secao() {
         setUsuario(""); // Atualiza o estado do usuário para vazio
 
         // Redireciona para a página de login usando useNavigate
-        navigate("/login"); // Substitua "/login" pela rota que deseja redirecionar
+        navigate("/criarsecao"); // Substitua "/login" pela rota que deseja redirecionar
     };
 
     return (
