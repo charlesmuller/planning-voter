@@ -43,7 +43,7 @@ function Secao() {
 
             // Atualiza os votos em tempo real
             socket.on("atualizarVotos", (votosRecebidos) => {
-                console.log("Votos recebidos do servidor:", votosRecebidos);
+                console.log("Votos recebidos do servidor atualizarVotos 46:", votosRecebidos);
                 setVotos(votosRecebidos); // Atualiza os votos no estado local
             });
         } else {
@@ -53,12 +53,12 @@ function Secao() {
 
         // Recebe votos do servidor
         socket.on("receberVotos", (votosRecebidos) => {
-            console.log("Votos recebidos do servidor:", votosRecebidos);
+            console.log("Votos recebidos do servidor: receberVotos 56", votosRecebidos);
             setVotos(votosRecebidos);
         });
 
         socket.on("mostrarVotos", (votosRecebidos) => {
-            console.log("Votos recebidos do servidor:", votosRecebidos); // Debug
+            console.log("Votos recebidos do servidor: mostrarVotos 61", votosRecebidos); // Debug
             setVotos(votosRecebidos); // Atualiza os votos com os recebidos do servidor
             setMostrarVotos(true); // Atualiza para mostrar os votos
         });
@@ -129,7 +129,9 @@ function Secao() {
 
     const handleNovaRodada = () => {
         // Emite o evento para o servidor iniciar a nova rodada
-        socket.emit("novaRodada", { idSecao });
+        console.log("idSecao no novaRodada", idSecao);
+
+        socket.emit("novaRodada", { idSecao, votos });
 
         // Atualiza o estado local para refletir imediatamente no cliente
         setVotos({});

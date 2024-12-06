@@ -152,24 +152,34 @@ io.on('connection', (socket) => {
 
     });
 
-    socket.on("novaRodada", (idSecao) => {
+    socket.on("novaRodada", (data) => {
         console.log('Iniciado evento novaRodada');
+        const { idSecao, votos } = data;
+        console.log('dados recebidos no server -> ', data);
 
-        console.log(`Nova rodada iniciada. Votos resetados. ${idSecao}`);
-        // Limpa o conteúdo do objeto votos
-        for (const key in votos) {
-            delete votos[key];
+        if (typeof votos === 'object') {
+            console.log(`Nova rodada iniciada. Votos resetados. ${JSON.stringify(idSecao)}`);
+
+            // Limpa o conteúdo do objeto votos
+            for (const key in votos) {
+                console.log(`[dentro do for] Removendo voto do usuário ${key}`);
+                delete votos[key];
+            }
+
         }
+
 
         if (secoes[idSecao]) {
 
             console.log(`Nova rodada iniciada. Votos resetados. ${idSecao}`);
-            
+            secoes[idSecao].votos = {}; // Reseta os votos da seção
+
             // Emite para todos os clientes para limpar os estados de seleção
             io.to(idSecao).emit("resetarRodada");
             console.log('emitindo resetarRodada (evento novaRodada)');
 
             // Atualiza os votos no frontend
+            console.log(`dados antes de emitir receberVotos no server ${idSecao}: ${JSON.stringify(secoes[idSecao].votos)}`);
             io.to(idSecao).emit("receberVotos", secoes[idSecao].votos);
             console.log('emitindo receberVotos (evento novaRodada)');
             console.log('------fim novaRodada------\n');
