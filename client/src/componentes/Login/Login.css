@@ -3,7 +3,6 @@
     justify-content: center;
     align-items: center;
     height: 800px;
-    color: aliceblue;
 }
 
 .usuario-container form div label {
@@ -11,6 +10,7 @@
     justify-content: center;
     align-items: center;
     font-size: 20px;
+    margin-bottom: 20px;
 }
 
 .login-container {

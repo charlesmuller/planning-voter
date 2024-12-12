@@ -32,15 +32,15 @@ app.use('/api', secoesRoutes);
 // Escutando novas conexões
 io.on('connection', (socket) => {
     console.log('conectado server');
-    
+
     // Evento para quando um usuário loga
     socket.on('usuarioLogado', (data) => {
         console.log('Iniciado evento usuarioLogado');
         const { usuario, idSecao } = data;
 
         console.log('Usuário conectado: ', usuario);
-        console.log('ID da seção: ', idSecao);
-        
+        console.log('ID da seção server: ', idSecao);
+
 
         // Verifica se o usuário já está na lista para evitar duplicações
         if (!usuariosLogados.includes(usuario)) {
@@ -126,7 +126,7 @@ io.on('connection', (socket) => {
             if (secoes[idSecao].votos[usuario]) {
                 delete secoes[idSecao].votos[usuario];
                 console.log(`Voto do usuário ${usuario} foi removido.`);
-                
+
             }
 
             io.to(idSecao).emit("atualizarVotos", secoes[idSecao].votos);

@@ -12,14 +12,14 @@ function Login() {
     const idSecao = location.state?.idSecao;
 
     useEffect(() => {
-        console.log("ID da seção no /login:", idSecao);
+        // console.log("ID da seção no /login:", idSecao);
 
     }, [location, navigate]);
 
     const handleLogin = (e) => {
         e.preventDefault();
         if (usuario) {
-            console.log("URL da seção:", localStorage.getItem("secaoUrl"));
+            // console.log("URL da seção:", localStorage.getItem("secaoUrl"));
             localStorage.setItem("usuario", usuario);
             navigate(`/secao/${idSecao}`, { state: { usuario } });
         } else {

@@ -22,10 +22,7 @@ function Secao() {
 
     useEffect(() => {
         const usuarioLogado = localStorage.getItem("usuario");
-        console.log("Usuário logado:", usuarioLogado);
-        console.log("ID da seção:", idSecao);
         if (!usuarioLogado || usuarioLogado.trim() === "") {
-            console.log("Redirecionando para login por falta de usuário logado...");
             navigate("/login", { state: { idSecao } });
             return; // Evita executar o restante do código no efeito
         }
@@ -43,7 +40,6 @@ function Secao() {
 
             // Atualiza os votos em tempo real
             socket.on("atualizarVotos", (votosRecebidos) => {
-                console.log("Votos recebidos do servidor atualizarVotos 46:", votosRecebidos);
                 setVotos(votosRecebidos); // Atualiza os votos no estado local
             });
         } else {
@@ -53,33 +49,40 @@ function Secao() {
 
         // Recebe votos do servidor
         socket.on("receberVotos", (votosRecebidos) => {
-            console.log("Votos recebidos do servidor: receberVotos 56", votosRecebidos);
             setVotos(votosRecebidos);
         });
 
         socket.on("mostrarVotos", (votosRecebidos) => {
-            console.log("Votos recebidos do servidor: mostrarVotos 61", votosRecebidos); // Debug
             setVotos(votosRecebidos); // Atualiza os votos com os recebidos do servidor
             setMostrarVotos(true); // Atualiza para mostrar os votos
         });
 
         socket.on("resetarRodada", () => {
-            console.log("Recebido evento 'resetarRodada' do servidor");
             setBotaoSelecionado(null); // Remove a seleção do botão
             setMostrarVotos(false);    // Oculta os votos
         });
 
-        
+
         const checkSecaoExistente = async () => {
             const response = await fetch(`/secao/${idSecao}`);
+            // Verifica se a resposta é bem-sucedida (status 200-299)
+            if (!response.ok) {
+                console.error(`Erro na requisição: ${response.status} - ${response.url}`);
+                navigate("/criarsecao");
+                return;
+            }
+
+            // Tenta processar o JSON da resposta
             const data = await response.json();
+
+            // Verifica se a seção é válida
             if (!data.valida) {
                 navigate("/criarsecao");
             }
         };
 
         checkSecaoExistente();
-        
+
         return () => {
             socket.off("atualizarVotos");
             socket.off("receberVotos");
@@ -97,7 +100,6 @@ function Secao() {
             return;
         }
         const novoVoto = { usuario, valor: textoBotao, idSecao };
-        console.log(`dados do voto antes de enviar ${JSON.stringify(novoVoto)}`);
         socket.emit('voto', novoVoto); // Envia o voto para o servidor
 
 
@@ -106,8 +108,6 @@ function Secao() {
             ...prev,
             [usuario]: textoBotao,
         }));
-
-        console.log(`Voto enviado: ${JSON.stringify(novoVoto)}`);
     };
 
     const handleClickChange = (textoBotao) => {
@@ -117,9 +117,6 @@ function Secao() {
     };
 
     const handleMostrarVotos = () => {
-        console.log("Emitindo evento 'pedirVotos' para o servidor");
-
-        console.log("dados no mostrarvotos:", usuario, idSecao, votos);
         socket.emit("pedirVotos", { usuario, idSecao, votos });
 
 
@@ -129,8 +126,6 @@ function Secao() {
 
     const handleNovaRodada = () => {
         // Emite o evento para o servidor iniciar a nova rodada
-        console.log("idSecao no novaRodada", idSecao);
-
         socket.emit("novaRodada", { idSecao, votos });
 
         // Atualiza o estado local para refletir imediatamente no cliente
@@ -144,7 +139,7 @@ function Secao() {
 
     const handleSair = () => {
         if (!usuario) {
-            console.error("Nenhum usuário logado encontrado!");
+            console.error("HandlerSair: Nenhum usuário logado encontrado!");
             return;
         }
 
@@ -161,17 +156,19 @@ function Secao() {
 
     return (
         <div className="secao-main">
-            <div>Seção ID: {idSecao}</div>;
-            <Menu />
-            <Botao
-                texto="Sair"
-                onClickChange={handleSair}
-            />
-            <Botao
-                texto="Nova Rodada"
-                onClickChange={handleNovaRodada}
-                className="nova-rodada" // Classe adicional para estilização, se necessário
-            />
+            <div className="barra-superior">
+                <div className="secao-nome">Seção ID: {idSecao}</div>
+                <Menu />
+                <Botao
+                    texto="Sair"
+                    onClickChange={handleSair}
+                />
+                <Botao
+                    texto="Nova Rodada"
+                    onClickChange={handleNovaRodada}
+                    className="nova-rodada" // Classe adicional para estilização, se necessário
+                />
+            </div>
 
             <div className="usuarios-logados">
                 <h1>Bem-vindo, {usuario}</h1>

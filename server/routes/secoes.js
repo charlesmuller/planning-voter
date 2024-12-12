@@ -16,20 +16,26 @@ router.post('/criar-secao', (req, res) => {
             console.error('Erro ao criar seção:', error);
             return res.status(500).json({ error: 'Erro ao criar seção' });
         }
+        res.header("Content-Type", "application/json");
         res.json({ idSecao, url: uniqueLink });
     });
 });
 
-// Validar se uma seção existe
 router.get('/secao/:idSecao', (req, res) => {
     const { idSecao } = req.params;
 
     db.query('SELECT * FROM secoes WHERE nome = ?', [idSecao], (error, results) => {
-        if (error || results.length === 0) {
-            return res.status(404).json({ error: "Seção não encontrada." });
+        if (error) {
+            console.error('Erro no banco:', error);
+            return res.status(500).json({ valida: false, error: 'Erro no servidor' });
+        }
+        if (results.length === 0) {
+            return res.status(404).json({ valida: false });
         }
         res.json({ valida: true });
     });
 });
+
+
 
 module.exports = router;

@@ -47,9 +47,9 @@
 
 .secao-expanded {
     height: 50px !important;
-  }
+}
 
-.secao-mostrar{
+.secao-mostrar {
     margin-top: 30px;
 }
 
@@ -68,9 +68,7 @@
     margin-top: 30px;
 }
 
-.secao-valor-clicado {
-
-}
+.secao-valor-clicado {}
 
 /* Estilo específico para o botão "Mostrar Votos" */
 .mostrar-votos {
@@ -89,4 +87,12 @@
     color: black;
     cursor: not-allowed;
     opacity: 0.6;
+}
+
+.secao-nome {}
+
+.barra-superior {
+    display: flex;
+    align-items: center;
+    flex-direction: row;
 }
