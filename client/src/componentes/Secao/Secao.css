@@ -5,74 +5,70 @@
 }
 
 .secao-content {
-    height: 50px;
     display: flex;
-    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
     justify-content: center;
+    align-items: center;
     margin-top: 10%;
 }
 
 .secao-botao-clicado {
-    height: 50px;
     display: flex;
-    background-color: #CCFF00;
-    color: black;
     border: none;
     border-radius: 10px;
     cursor: pointer;
     font-size: 22px;
     font-weight: bold;
-    margin-top: 30px;
     justify-content: center;
-    width: 25%;
     align-items: center;
-}
-
-.secao-votos {
-    height: 250px;
-    display: flex;
-    background-color: #CCFF00;
-    color: black;
-    padding: 50px 0px;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    font-size: 22px;
-    font-weight: bold;
-    margin-top: 30px;
-    justify-content: center;
-    width: 50%;
-    align-items: center;
-}
-
-.secao-expanded {
-    height: 50px !important;
-}
-
-.secao-mostrar {
-    margin-top: 30px;
+    transform: scale(1.3);
+    background-color: gray;
+    color: white;
 }
 
 .usuarios-logados {
     display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    background-color: #CCFF00;
+    background-color: #5a95e8;
     color: black;
-    padding: 50px 0px;
+    padding: 20px 20px;
     border: none;
     border-radius: 10px;
-    font-size: 22px;
-    font-weight: bold;
-    margin-top: 30px;
+    font-size: 14px;
+    flex-direction: column;
+    align-items: flex-start;
 }
 
-.secao-valor-clicado {}
+.usuarios-logados .secao-nome {
+    font-weight: bold;
+}
 
-/* Estilo específico para o botão "Mostrar Votos" */
+.usuarios-logados h1 {
+    font-size: 18px;
+}
+
+.usuarios-logados p {
+    padding: 0;
+    margin: 5% 0 0 0;
+    font-size: 16px;
+}
+
+.usuarios-logados ul {
+    padding: 0;
+    margin: 3% 0% 0% 0%;
+}
+
+.usuarios-logados li {
+    font-size: 15px;
+    width: 100%;
+}
+
+.usuarios-logados span {
+    width: 100px;
+}
+
 .mostrar-votos {
-    background-color: #CCFF00;
+    background-color: #5a95e8;
     color: black;
     border: none;
     padding: 15px 30px;
@@ -81,18 +77,60 @@
     transition: 0.3s ease;
 }
 
-/* Quando o botão estiver desabilitado */
 .mostrar-votos:disabled {
-    background-color: #c9f57e;
+    background-color: gray;
     color: black;
     cursor: not-allowed;
     opacity: 0.6;
 }
 
-.secao-nome {}
-
 .barra-superior {
     display: flex;
     align-items: center;
     flex-direction: row;
+    margin-top: 2%;
+}
+
+.content-data {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 2%;
+}
+.secao-mostrar {
+    margin-top: 12%;
+}
+
+.mostrar-votos .mostrar-votos {
+    margin-top: 30px;
+}
+
+.secao-votos {
+    display: flex;
+    background-color: #5a95e8;
+    color: black;
+    border: none;
+    border-radius: 10px;
+    font-size: 22px;
+    font-weight: bold;
+    margin-top: 30px;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+
+}
+
+.voto-valor {
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-weight: bold;
+}
+
+.votos-usuarios-visiveis ul li {
+    margin-bottom: 10px;
+}
+
+.votos-usuarios-visiveis ul {
+    margin-right: 38px;
 }

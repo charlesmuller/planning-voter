@@ -14,7 +14,6 @@ const Botao = (props) => {
     };
 
     return (
-        <div>
             <button
                 // className={`botao ${props.className || ''} ${foiClicado ? 'secao-botao-clicado secao-expanded' : ''}`}
                 className={`botao ${props.className || ''} ${foiClicado ? 'clicado' : ''}`}
@@ -24,7 +23,6 @@ const Botao = (props) => {
             >
                 <span>{props.texto}</span>
             </button>
-        </div>
     )
 }
 

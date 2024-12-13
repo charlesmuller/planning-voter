@@ -6,7 +6,7 @@ Projeto ainda em desenvolvimento
 Para rodar o projeto:
 - Clonar do gitlab;
 - Dentro do diretório clonado rodar o comando 'docker-compose up -d planning-voter-web'
-- Acessar http://locahost:3000/
+- Acessar http://localhost:3000/
 
 
 Comandos rodados até agora:

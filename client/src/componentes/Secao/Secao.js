@@ -157,8 +157,6 @@ function Secao() {
     return (
         <div className="secao-main">
             <div className="barra-superior">
-                <div className="secao-nome">Seção ID: {idSecao}</div>
-                <Menu />
                 <Botao
                     texto="Sair"
                     onClickChange={handleSair}
@@ -170,54 +168,60 @@ function Secao() {
                 />
             </div>
 
-            <div className="usuarios-logados">
-                <h1>Bem-vindo, {usuario}</h1>
-                <h2>Usuários Logados:</h2>
-                <ul>
-                    {usuarios.map((user, index) => (
-                        <li key={index}>
-                            {user}
-                            <span>
-                                {votos[user] ? " -> [votou]" : " -> [não votou]"}
-                            </span>
-                        </li>
+            <div className="content-data">
+                <div className="usuarios-logados">
+                    <h1>Bem-vindo, {usuario}</h1>
+                    <div className="secao-nome">Seção ID: {idSecao}</div>
+                    <p>Usuários Logados:</p>
+                    <ul>
+                        {usuarios.map((user, index) => (
+                            <li key={index}>
+                                {user}
+                                <span>
+                                    {votos[user] ? " -> [votou]" : " -> [não votou]"}
+                                </span>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+                <div className="secao-content">
+                    {["1", "2", "3", "5", "8", "13", "21"].map((valor) => (
+                        <Botao
+                            key={valor}
+                            texto={valor}
+                            foiClicado={botaoSelecionado === valor}
+                            onClickChange={() => handleClickChange(valor)}
+                            className={botaoSelecionado === valor ? 'secao-botao-clicado' : ''}
+                        />
                     ))}
-                </ul>
+                </div>
+
             </div>
-            <div className="secao-content">
-                {["1", "2", "3", "5", "8", "13", "21"].map((valor) => (
+            <div className="mostrar-votos-main">
+                <div className="secao-mostrar">
                     <Botao
-                        key={valor}
-                        texto={valor}
-                        foiClicado={botaoSelecionado === valor}
-                        onClickChange={() => handleClickChange(valor)}
-                        className={botaoSelecionado === valor ? 'secao-botao-clicado secao-expanded' : ''}
+                        texto="Mostrar Votos"
+                        onClickChange={handleMostrarVotos}
+                        disabled={!todosVotaram}
+                        className="mostrar-votos" // Classe adicional
                     />
-                ))}
-            </div>
-            <div className="secao-mostrar">
-                <Botao
-                    texto="Mostrar Votos"
-                    onClickChange={handleMostrarVotos}
-                    disabled={!todosVotaram}
-                    className="mostrar-votos" // Classe adicional
-                />
-            </div>
+                </div>
 
-            <div className="secao-votos">
+                <div className="secao-votos">
 
-                {mostrarVotos && Object.keys(votos).length > 0 && (
-                    <div>
-                        <h3>Votos dos Usuários:</h3>
-                        <ul>
-                            {usuarios.map((user, index) => (
-                                <li key={index}>
-                                    {user}: {votos[user] || "Ainda não votou"}
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                )}
+                    <p>Votos dos Usuários:</p>
+                    {mostrarVotos && Object.keys(votos).length > 0 && (
+                        <div className="votos-usuarios-visiveis">
+                            <ul>
+                                {usuarios.map((user, index) => (
+                                    <li key={index}>
+                                        {user}: <span className="voto-valor">{votos[user] || "Ainda não votou"}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     )

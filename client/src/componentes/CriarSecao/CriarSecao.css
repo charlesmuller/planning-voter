@@ -5,6 +5,12 @@
     height: 800px;
 }
 
+.secao-container form h1{
+    align-items: center;
+    margin-bottom: 2rem;
+    font-size: 30px;
+}
+
 .secao-container form div label {
     display: flex;
     justify-content: center;
@@ -22,12 +28,6 @@ form {
     max-width: 600px;
     width: 100%;
     box-sizing: border-box;
-}
-
-h1 {
-    align-items: center;
-    margin-bottom: 2rem;
-    font-size: 30px;
 }
 
 label {
