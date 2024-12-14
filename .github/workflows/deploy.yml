@@ -1,0 +1,36 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Checkout do código
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    # Construir imagens Docker com variáveis de ambiente
+    - name: Build and Push Docker Images
+      run: |
+        docker-compose -f docker-compose.yml build
+
+    # Deploy no VPS (via SSH)
+    - name: Deploy to VPS
+      uses: appleboy/ssh-action@v0.5.7
+      with:
+        host: ${{ secrets.VPS_HOST }}
+        username: ${{ secrets.VPS_USERNAME }}
+        key: ${{ secrets.VPS_PRIVATE_KEY }}
+        script: |
+          cd /planning-voter/server
+          export DB_HOST=${{ secrets.DB_HOST }}
+          export DB_USER=${{ secrets.DB_USER }}
+          export DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          export DB_NAME=${{ secrets.DB_NAME }}
+          docker-compose down
+          docker-compose up -d --build
