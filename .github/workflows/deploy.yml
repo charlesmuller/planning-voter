@@ -13,6 +13,15 @@ jobs:
     # Checkout do código
     - name: Checkout code
       uses: actions/checkout@v3
+
+    # Instalar Docker no runner (caso precise de construção local)
+    - name: Set up Docker Compose
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y docker.io
+        sudo apt-get install -y curl
+        curl -L "https://github.com/docker/compose/releases/download/$(curl -s https://api.github.com/repos/docker/compose/releases/latest | jq -r .tag_name)/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+        sudo chmod +x /usr/local/bin/docker-compose
     
     # Construir imagens Docker com variáveis de ambiente
     - name: Build and Push Docker Images
