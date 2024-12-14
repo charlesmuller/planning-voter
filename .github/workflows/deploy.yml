@@ -10,36 +10,42 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # Checkout do código
-    - name: Checkout code
-      uses: actions/checkout@v3
+      # Checkout do código
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    # Instalar Docker no runner (caso precise de construção local)
-    - name: Set up Docker Compose
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y docker.io
-        sudo apt-get install -y curl
-        curl -L "https://github.com/docker/compose/releases/download/$(curl -s https://api.github.com/repos/docker/compose/releases/latest | jq -r .tag_name)/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-        sudo chmod +x /usr/local/bin/docker-compose
-    
-    # Construir imagens Docker com variáveis de ambiente
-    - name: Build and Push Docker Images
-      run: |
-        docker-compose -f docker-compose.yml build
+      # Instalar Docker no runner (caso precise de construção local)
+      - name: Install Docker and Docker Compose
+        run: |
+          # Atualiza a lista de pacotes e instala dependências essenciais
+          sudo apt-get update
+          sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common
 
-    # Deploy no VPS (via SSH)
-    - name: Deploy to VPS
-      uses: appleboy/ssh-action@v0.1.4
-      with:
-        host: ${{ secrets.VPS_HOST }}
-        username: ${{ secrets.VPS_USERNAME }}
-        key: ${{ secrets.VPS_PRIVATE_KEY }}
-        script: |
-          cd /planning-voter/server
-          export DB_HOST=${{ secrets.DB_HOST }}
-          export DB_USER=${{ secrets.DB_USER }}
-          export DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-          export DB_NAME=${{ secrets.DB_NAME }}
-          docker-compose down
-          docker-compose up -d --build
+          # Adiciona o repositório oficial do Docker
+          curl -fsSL https://get.docker.com -o get-docker.sh
+          sudo sh get-docker.sh
+
+          # Instala Docker Compose
+          sudo curl -L "https://github.com/docker/compose/releases/download/$(curl -s https://api.github.com/repos/docker/compose/releases/latest | jq -r .tag_name)/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+
+      # Construir imagens Docker com variáveis de ambiente
+      - name: Build and Push Docker Images
+        run: |
+          docker-compose -f docker-compose.yml build
+
+      # Deploy no VPS (via SSH)
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v0.1.4
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_PRIVATE_KEY }}
+          script: |
+            cd /planning-voter/server
+            export DB_HOST=${{ secrets.DB_HOST }}
+            export DB_USER=${{ secrets.DB_USER }}
+            export DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            export DB_NAME=${{ secrets.DB_NAME }}
+            docker-compose down
+            docker-compose up -d --build
