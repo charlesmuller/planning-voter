@@ -2,8 +2,11 @@ const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
 const app = express();
 const server = http.createServer(app);
+const path = require('path');
+
 const usuariosLogados = [];
 const votos = {};
 const secoesRoutes = require('./routes/secoes'); // Caminho para o arquivo de rotas
@@ -16,8 +19,21 @@ const io = socketIo(server, {
     },
 });
 
-// Use o CORS no Express
-app.use(cors());
+// Configurações de CORS
+const corsOptions = {
+    origin: 'http://localhost:3000', // Domínio do cliente React
+    methods: ['GET', 'POST'], // Métodos permitidos
+    credentials: true, // Permitir envio de cookies
+};
+
+// Middleware de CORS com as opções configuradas
+app.use(cors(corsOptions));
+
+// Middleware para lidar com cookies
+app.use(cookieParser());
+
+// Middleware para tratar JSON no body das requisições
+app.use(express.json());
 
 // Define a rota básica do servidor (pode ser útil para verificar se o servidor está funcionando)
 app.get('/', (req, res) => {
@@ -28,6 +44,18 @@ app.use(express.json()); // Middleware para tratar JSON no body das requisiçõe
 
 // Registra as rotas de /server/routes/secoes.js
 app.use('/api', secoesRoutes);
+
+// Middleware para servir o React
+app.use(express.static(path.join(__dirname, 'frontend', 'build')));
+
+// Configuração de erro padrão
+app.use((err, req, res, next) => {
+    if (err.code === 'EBADCSRFTOKEN') {
+        return res.status(403).json({ error: 'Token CSRF inválido ou ausente' });
+    }
+    console.error(err);
+    res.status(500).send('Erro interno do servidor');
+});
 
 // Escutando novas conexões
 io.on('connection', (socket) => {
@@ -71,8 +99,7 @@ io.on('connection', (socket) => {
         console.log(`Lista de logados: ${usuariosLogados} `);
 
         // Emite para o usuário logado os votos atualizados
-        socket.emit("atualizarVotos", votos);
-        console.log(`Votos atualizados para os usuários logados (evento usuarioLogado): ${usuario}: ${JSON.stringify(votos)}`);
+        socket.emit("atualizarVotos", secoes[idSecao].votos);
         console.log('------fim usuarioLogado------\n');
     });
 
@@ -167,7 +194,6 @@ io.on('connection', (socket) => {
             }
 
         }
-
 
         if (secoes[idSecao]) {
 

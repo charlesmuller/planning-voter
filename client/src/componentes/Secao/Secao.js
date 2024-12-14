@@ -1,9 +1,9 @@
 import "./Secao.css"
-import Menu from "../Menu/Menu"
 import Botao from "../Botao/Botao"
 import socket from '../../comunication/socket';
 import { useState, useEffect } from "react"
 import { useNavigate, useParams, useLocation } from "react-router-dom";
+import api from "../../api/api";
 
 function Secao() {
     const [botaoSelecionado, setBotaoSelecionado] = useState(null); // Armazena o texto do botão selecionado
@@ -19,14 +19,12 @@ function Secao() {
     const { idSecao } = useParams();
     const navigate = useNavigate();
 
-
     useEffect(() => {
         const usuarioLogado = localStorage.getItem("usuario");
         if (!usuarioLogado || usuarioLogado.trim() === "") {
             navigate("/login", { state: { idSecao } });
             return; // Evita executar o restante do código no efeito
         }
-
 
         if (idSecao && usuarioLogado) {
             // Enviar evento de login ao servidor
@@ -42,6 +40,7 @@ function Secao() {
             socket.on("atualizarVotos", (votosRecebidos) => {
                 setVotos(votosRecebidos); // Atualiza os votos no estado local
             });
+            
         } else {
             alert("Seção inválida ou não encontrada!");
             navigate("/");
@@ -64,20 +63,29 @@ function Secao() {
 
 
         const checkSecaoExistente = async () => {
-            const response = await fetch(`/secao/${idSecao}`);
-            // Verifica se a resposta é bem-sucedida (status 200-299)
-            if (!response.ok) {
-                console.error(`Erro na requisição: ${response.status} - ${response.url}`);
-                navigate("/criarsecao");
-                return;
-            }
+            try {
+                const response = await api.get(`/secao/${idSecao}`);
 
-            // Tenta processar o JSON da resposta
-            const data = await response.json();
+                if (response.status >= 200 && response.status < 300) {
+                    const data = response.data;
 
-            // Verifica se a seção é válida
-            if (!data.valida) {
-                navigate("/criarsecao");
+                    if (!data.valida) {
+                        setTimeout(() => {
+                            navigate('/criarsecao');
+                        }, 2000);
+                    }
+                } else {
+                    console.error(`Erro na requisição: ${response.status} - ${response.config.url}`);
+                    setTimeout(() => {
+                        navigate('/criarsecao');
+                    }, 2000);
+                }
+            } catch (error) {
+                // Captura qualquer erro de rede ou erro gerado pelo axios
+                console.error('Erro ao fazer a requisição:', error); // Log do erro
+                setTimeout(() => {
+                    navigate('/criarsecao');
+                }, 2000);
             }
         };
 
@@ -118,8 +126,6 @@ function Secao() {
 
     const handleMostrarVotos = () => {
         socket.emit("pedirVotos", { usuario, idSecao, votos });
-
-
         setMostrarVotos(true); // Atualiza o estado para exibir os votos
         setMostrarVotosClicado(true); // Marca o botão como clicado
     };
@@ -208,8 +214,7 @@ function Secao() {
                 </div>
 
                 <div className="secao-votos">
-
-                    <p>Votos dos Usuários:</p>
+                    <p>Votos dos usuários:</p>
                     {mostrarVotos && Object.keys(votos).length > 0 && (
                         <div className="votos-usuarios-visiveis">
                             <ul>

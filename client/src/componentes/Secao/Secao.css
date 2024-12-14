@@ -97,7 +97,10 @@
     align-items: center;
     margin-top: 2%;
 }
+
 .secao-mostrar {
+    display: flex;
+    justify-content: center;
     margin-top: 12%;
 }
 

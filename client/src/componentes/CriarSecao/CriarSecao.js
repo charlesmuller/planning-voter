@@ -2,7 +2,7 @@ import "./CriarSecao.css";
 import Menu from "../Menu/Menu";
 import Botao from "../Botao/Botao";
 import React, { useState } from "react";
-import axios from "axios";
+import api from "../../api/api";
 import { useNavigate } from "react-router-dom";
 
 
@@ -14,7 +14,15 @@ function CriarSecao() {
     // Função para gerar a URL da seção
     const handleGerarURL = async () => {
         try {
-            const response = await axios.post("http://localhost:4000/api/criar-secao");
+            const tokenResponse = await api.get("/csrf-token");
+            const csrfToken = tokenResponse.data.csrfToken;
+            
+            const response = await api.post("/criar-secao", {},{
+                headers: {
+                    "X-CSRF-Token": csrfToken,
+                },
+            });
+
             const idSecao = response.data.idSecao;
             const urlBase = process.env.REACT_APP_URL_LOCAL || "http://localhost:3000";
             const urlCompleta = `${urlBase}/login?idSecao=${idSecao}`;

@@ -9,7 +9,6 @@ services:
       - "3000:3000"
     volumes:
       - ./client:/app
-      - /app/node_modules
     command: npm start
     depends_on:
       - server
@@ -23,7 +22,6 @@ services:
       - "4000:4000"
     volumes:
       - ./server:/usr/src/app
-      - /usr/src/app/node_modules
     environment:
       NODE_ENV: development
     command: npm start
