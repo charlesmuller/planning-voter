@@ -24,6 +24,3 @@ services:
     command: npm run start
     volumes:
       - ./server:/usr/src/app
-networks:
-  app-network:
-    driver: bridge

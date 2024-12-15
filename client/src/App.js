@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import CriarSecao from "./componentes/CriarSecao/CriarSecao";
 import Login from "./componentes/Login/Login";
 import Secao from "./componentes/Secao/Secao";
-import { Routes, Route, useNavigate } from 'react-router-dom'; // Apenas importando as partes necessárias
+import { Routes, Route } from 'react-router-dom'; // Apenas importando as partes necessárias
 
 function App() {
   return (

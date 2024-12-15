@@ -61,7 +61,6 @@ function Secao() {
             setMostrarVotos(false);    // Oculta os votos
         });
 
-
         const checkSecaoExistente = async () => {
             try {
                 const response = await api.get(`/secao/${idSecao}`);

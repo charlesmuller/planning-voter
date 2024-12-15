@@ -3,13 +3,10 @@ import Menu from "../Menu/Menu";
 import Botao from "../Botao/Botao";
 import React, { useState } from "react";
 import api from "../../api/api";
-import { useNavigate } from "react-router-dom";
-
 
 function CriarSecao() {
     const [urlSecao, setUrlSecao] = useState("");
     const [linkGerado, setLinkGerado] = useState(false);
-    const navigate = useNavigate();
 
     // Função para gerar a URL da seção
     const handleGerarURL = async () => {

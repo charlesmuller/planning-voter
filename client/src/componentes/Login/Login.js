@@ -9,7 +9,7 @@ function Login() {
     const navigate = useNavigate();
     const [secaoUrl, setSecaoUrl] = useState("");
     const location = useLocation();
-    const idSecao = location.state?.idSecao;
+    const idSecao = new URLSearchParams(location.search).get("idSecao");
 
     useEffect(() => {
         // console.log("ID da seção no /login:", idSecao);
