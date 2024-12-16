@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
@@ -7,6 +8,9 @@ const app = express();
 const server = http.createServer(app);
 const path = require('path');
 
+const CLIENT_URL = process.env.CLIENT_URL;
+const API_PORT = process.env.API_PORT || 4000;
+
 const usuariosLogados = [];
 const votos = {};
 const secoesRoutes = require('./routes/secoes'); // Caminho para o arquivo de rotas
@@ -14,14 +18,14 @@ const secoes = {}; // Estrutura para armazenar usuários e votos por seção
 
 const io = socketIo(server, {
     cors: {
-        origin: 'http://localhost:3000',
+        origin: CLIENT_URL,
         methods: ['GET', 'POST'],
     },
 });
 
 // Configurações de CORS
 const corsOptions = {
-    origin: 'http://localhost:3000', // Domínio do cliente React
+    origin: CLIENT_URL,
     methods: ['GET', 'POST'], // Métodos permitidos
     credentials: true, // Permitir envio de cookies
 };
@@ -243,7 +247,7 @@ io.on('connection', (socket) => {
     console.log('-------fim connection--------\n');
 });
 
-// Inicia o servidor na porta 4000
-server.listen(4000, () => {
+// Inicia o servidor na porta especifica conforme env
+server.listen(API_PORT, () => {
     console.log('Servidor WebSocket rodando na porta 4000');
 });

@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../base');
-const urlLocal = 'http://localhost:3000';
+const urlLocal = process.env.CLIENT_URL || 'http://localhost:3000';
 const cookieParser = require('cookie-parser');
 const csrf = require('csurf');
 
