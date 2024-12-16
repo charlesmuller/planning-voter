@@ -4,9 +4,11 @@ services:
       context: ./client
       dockerfile: Dockerfile.prod
     ports:
-      - "8080:80"
+      - "80:80"
     depends_on:
       - server
+    networks:
+      - app-network
 
   server:
     build:
@@ -16,3 +18,9 @@ services:
       - "4000:4000"
     environment:
       NODE_ENV: production
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
