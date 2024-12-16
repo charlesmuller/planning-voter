@@ -2,25 +2,17 @@ services:
   planning-voter-web:
     build:
       context: ./client
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.prod
     ports:
       - "80:80"
-    environment:
-      NODE_ENV: production
-    command: npm run build
     depends_on:
       - server
-    volumes:
-      - ./client:/app
 
   server:
     build:
       context: ./server
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.prod
     ports:
       - "4000:4000"
     environment:
       NODE_ENV: production
-    command: npm run start
-    volumes:
-      - ./server:/usr/src/app
