@@ -18,16 +18,35 @@ const secoes = {}; // Estrutura para armazenar usuários e votos por seção
 
 const io = socketIo(server, {
     cors: {
-        origin: CLIENT_URL,
-        methods: ['GET', 'POST'],
-    },
+        origin: (origin, callback) => {
+            if (!origin || allowedOrigins.includes(origin)) {
+                callback(null, true);
+            } else {
+                callback(new Error('Not allowed by CORS'));
+            }
+        },
+        methods: ['GET', 'POST']
+    }
 });
+
+const allowedOrigins = [
+    'http://muller.vps-kinghost.net',
+    'http://www.muller.vps-kinghost.net',
+    CLIENT_URL // Inclui o valor atual da variável de ambiente
+];
 
 // Configurações de CORS
 const corsOptions = {
-    origin: CLIENT_URL,
+    origin: (origin, callback) => {
+        // Permite requisições sem origem (e.g., ferramentas como Postman)
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     methods: ['GET', 'POST'], // Métodos permitidos
-    credentials: true, // Permitir envio de cookies
+    credentials: true // Permitir envio de cookies e cabeçalhos de autenticação
 };
 
 // Middleware de CORS com as opções configuradas
