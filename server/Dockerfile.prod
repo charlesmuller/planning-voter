@@ -1,9 +1,0 @@
-FROM node:18
-WORKDIR /usr/src/app
-ENV NODE_ENV=production
-COPY package*.json ./
-RUN npm install
-COPY . .
-COPY .env.production /usr/src/app/.env
-EXPOSE 4000
-CMD ["node", "server.js"]

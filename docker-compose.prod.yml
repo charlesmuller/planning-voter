@@ -7,20 +7,13 @@ services:
       - "80:80"
     depends_on:
       - server
-    networks:
-      - app-network
 
   server:
     build:
       context: ./server
-      dockerfile: Dockerfile.prod
+      dockerfile: Dockerfile
     ports:
       - "4000:4000"
     environment:
       NODE_ENV: production
-    networks:
-      - app-network
-
-networks:
-  app-network:
-    driver: bridge
+    command: node server.js
