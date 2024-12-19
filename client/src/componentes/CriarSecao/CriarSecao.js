@@ -11,10 +11,10 @@ function CriarSecao() {
     // Função para gerar a URL da seção
     const handleGerarURL = async () => {
         try {
-            const tokenResponse = await api.get("/csrf-token");
+            const tokenResponse = await api.get("/api/csrf-token");
             const csrfToken = tokenResponse.data.csrfToken;
             
-            const response = await api.post("/criar-secao", {},{
+            const response = await api.post("/api/criar-secao", {},{
                 headers: {
                     "X-CSRF-Token": csrfToken,
                 },

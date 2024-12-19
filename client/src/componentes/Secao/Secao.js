@@ -63,7 +63,7 @@ function Secao() {
 
         const checkSecaoExistente = async () => {
             try {
-                const response = await api.get(`/secao/${idSecao}`);
+                const response = await api.get(`/api/secao/${idSecao}`);
 
                 if (response.status >= 200 && response.status < 300) {
                     const data = response.data;
