@@ -33,7 +33,7 @@ services:
     networks:
       - app_network
     depends_on:
-      - client
+      - planning-voter-web
       - server
 
 networks:
