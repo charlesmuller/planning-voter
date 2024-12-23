@@ -4,7 +4,10 @@ services:
       context: ./client
       dockerfile: Dockerfile.prod
     ports:
+      - "443:443"
       - "80:80"
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt:ro
     depends_on:
       - server
 
@@ -17,3 +20,22 @@ services:
     environment:
       NODE_ENV: production
     command: node server.js
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx_server
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/certs:/etc/nginx/certs
+    networks:
+      - app_network
+    depends_on:
+      - client
+      - server
+
+networks:
+  app_network:
+    driver: bridge
