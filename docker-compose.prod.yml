@@ -25,6 +25,8 @@ services:
   nginx:
     image: nginx:latest
     container_name: nginx_server
+    build:
+      context: ./nginx
     ports:
       - "80:80"
       - "443:443"
