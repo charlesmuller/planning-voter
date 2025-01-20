@@ -7,9 +7,7 @@ services:
       - /etc/letsencrypt/live/charlesmuller.dev.br:/etc/letsencrypt:ro
     depends_on:
       - server
-    networks:
-      - app_network
-
+    
   server:
     build:
       context: ./server
@@ -19,28 +17,3 @@ services:
     environment:
       NODE_ENV: production
     command: node server.js
-    networks:
-      - app_network
-
-  nginx:
-    image: nginx:latest
-    container_name: nginx_server
-    build:
-      context: ./nginx
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx/conf.d:/etc/nginx/conf.d
-      - ./nginx/certs:/etc/nginx/certs
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - /etc/letsencrypt:/etc/letsencrypt:ro
-    networks:
-      - app_network
-    depends_on:
-      - planning-voter-web
-      - server
-
-networks:
-  app_network:
-    driver: bridge
