@@ -2,12 +2,11 @@ import "./Login.css";
 import Menu from "../Menu/Menu";
 import Botao from "../Botao/Botao";
 import { useState, useEffect } from "react";
-import { useNavigate, useLocation, useParams } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 function Login() {
     const [usuario, setUsuario] = useState(""); // Para armazenar o valor do email
     const navigate = useNavigate();
-    const [secaoUrl, setSecaoUrl] = useState("");
     const location = useLocation();
     const idSecao = new URLSearchParams(location.search).get("idSecao");
 
@@ -19,7 +18,6 @@ function Login() {
     const handleLogin = (e) => {
         e.preventDefault();
         if (usuario) {
-            // console.log("URL da seção:", localStorage.getItem("secaoUrl"));
             localStorage.setItem("usuario", usuario);
             navigate(`/secao/${idSecao}`, { state: { usuario } });
         } else {

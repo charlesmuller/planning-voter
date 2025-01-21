@@ -1,8 +1,5 @@
 import React from "react";
-import { Link } from 'react-router-dom';
 import "./Menu.css";
-
-
 function Menu() {
     return (
         <div className="logo-container-menu">
@@ -11,7 +8,6 @@ function Menu() {
                     <nav>
                         <ul>
                             <li>
-                                {/* <Link to={'/criarsecao'}>Criar Seção</Link> */}
                             </li>
                         </ul>
                     </nav>
@@ -21,5 +17,4 @@ function Menu() {
         </div>
     );
 }
-
 export default Menu;

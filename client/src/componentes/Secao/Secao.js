@@ -2,20 +2,18 @@ import "./Secao.css"
 import Botao from "../Botao/Botao"
 import socket from '../../comunication/socket';
 import { useState, useEffect } from "react"
-import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import api from "../../api/api";
 
 function Secao() {
     const [botaoSelecionado, setBotaoSelecionado] = useState(null); // Armazena o texto do botão selecionado
-    const [foiClicado, setFoiClicado] = useState(false)
-    const [texto, setTexto] = useState('')
-    const [usuariosAcao, setUsuariosAcao] = useState([])
-    const [votos, setVotos] = useState({}) // Armazena os votos de todos os usuários
+    const [, setTexto] = useState('');
+    const [votos, setVotos] = useState({});
     const [usuario, setUsuario] = useState("");
     const [usuarios, setUsuarios] = useState([]); // Lista de usuários logados
     const [mostrarVotos, setMostrarVotos] = useState(false); // Controla a exibição dos votos
     const todosVotaram = usuarios.every((user) => votos[user]);
-    const [mostrarVotosClicado, setMostrarVotosClicado] = useState(false);
+    const [, setMostrarVotosClicado] = useState(false);
     const { idSecao } = useParams();
     const navigate = useNavigate();
 
