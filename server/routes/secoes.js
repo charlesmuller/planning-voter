@@ -5,17 +5,41 @@ const urlLocal = process.env.CLIENT_URL || 'http://localhost:3000';
 const cookieParser = require('cookie-parser');
 const csrf = require('csurf');
 
+router.use(cookieParser());
+
+// Definir csrfProtection após cookieParser
 const csrfProtection = csrf({
     cookie: {
-      httpOnly: true, // Protege contra acesso via JavaScript
-      secure: false,  // Altere para true se usar HTTPS
-      sameSite: 'strict', // Controla o envio de cookies entre sites
+        httpOnly: true, // Protege contra acesso via JavaScript
+        secure: process.env.NODE_ENV === 'production', // Apenas em produção
+        sameSite: 'strict', // Controla o envio de cookies entre sites
+        path: '/',
+        maxAge: 3600000,
+        domain: process.env.COOKIE_DOMAIN || undefined,
     },
-  });
-router.use(cookieParser());
+});
+
+
+router.use((req, res, next) => {
+    res.set({
+        'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
+        'X-Content-Type-Options': 'nosniff',
+        'X-Frame-Options': 'DENY',
+        'X-XSS-Protection': '1; mode=block'
+    });
+    next();
+});
+
+router.get('/csrf-token', csrfProtection, (req, res) => {
+    console.log("CSRF Middleware aplicado"); // Verificar se o middleware está sendo executado
+    res.json({ csrfToken: req.csrfToken() });
+});
 
 // Criar uma nova seção
 router.post('/criar-secao', csrfProtection, (req, res) => {
+    console.log('Token CSRF recebido:', req.headers['x-csrf-token']);
+    console.log('Corpo da requisição:', req.body);
+
     const idSecao = `${Math.random().toString(36).substr(2, 8)}${Math.floor(Math.random() * 100)}`;
     const uniqueLink = `${urlLocal}/secao/${idSecao}`;
     const nome = idSecao;
@@ -46,9 +70,6 @@ router.get('/secao/:idSecao', (req, res) => {
     });
 });
 
-router.get('/csrf-token', csrfProtection, (req, res) => {
-    res.json({ csrfToken: req.csrfToken() });
-});
 
 
 module.exports = router;

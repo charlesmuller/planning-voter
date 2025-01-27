@@ -11,14 +11,27 @@ function CriarSecao() {
     // Função para gerar a URL da seção
     const handleGerarURL = async () => {
         try {
-            const tokenResponse = await api.get("/api/csrf-token");
-            const csrfToken = tokenResponse.data.csrfToken;
-            
-            const response = await api.post("/api/criar-secao", {},{
-                headers: {
-                    "X-CSRF-Token": csrfToken,
-                },
+            console.log("entrou no handleGerarURL");
+
+            // Obter o token CSRF com withCredentials
+            const tokenResponse = await api.get("/api/csrf-token", {
+                withCredentials: true, // Garantir que o cookie CSRF seja enviado
             });
+
+            const csrfToken = tokenResponse.data.csrfToken;
+            console.log("resposta: ", csrfToken);
+
+            // Enviar o CSRF Token no cabeçalho
+            const response = await api.post(
+                "/api/criar-secao",
+                {}, // Corpo da requisição
+                {
+                    headers: {
+                        "X-CSRF-Token": csrfToken, // Adicionando o token CSRF aqui
+                    },
+                    withCredentials: true, // Garantir que o cookie CSRF seja enviado
+                }
+            );
 
             const idSecao = response.data.idSecao;
             const urlBase = process.env.REACT_APP_URL_LOCAL || "http://localhost:3000";

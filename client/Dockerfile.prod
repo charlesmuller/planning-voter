@@ -1,6 +1,15 @@
+# Etapa de Build
 FROM node:lts-alpine AS build
 WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
+COPY .env.production .env.production
 RUN npm run build
+
+# Etapa de Produção
+FROM nginx:alpine AS production
+COPY --from=build /app/build /usr/share/nginx/html
+COPY .env.production /usr/share/nginx/html/.env.production
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
