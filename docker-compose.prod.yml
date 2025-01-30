@@ -3,11 +3,19 @@ services:
     build:
       context: ./client
       dockerfile: Dockerfile.prod
+      args:
+        NODE_ENV: production
+    environment:
+      - NODE_OPTIONS=--max-old-space-size=768
     volumes:
       - /etc/letsencrypt/live/charlesmuller.dev.br:/etc/letsencrypt:ro
     depends_on:
       - server
-    
+    networks:
+      - app-network
+    ports:
+      - "3000:80"
+
   server:
     build:
       context: ./server
@@ -16,4 +24,10 @@ services:
       - "4000:4000"
     environment:
       NODE_ENV: production
-    command: node server.js
+      NODE_OPTIONS: --max-old-space-size=768
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

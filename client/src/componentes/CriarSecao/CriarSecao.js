@@ -11,17 +11,12 @@ function CriarSecao() {
     // Função para gerar a URL da seção
     const handleGerarURL = async () => {
         try {
-            console.log("entrou no handleGerarURL");
-
             // Obter o token CSRF com withCredentials
             const tokenResponse = await api.get("/api/csrf-token", {
                 withCredentials: true, // Garantir que o cookie CSRF seja enviado
             });
 
             const csrfToken = tokenResponse.data.csrfToken;
-            console.log("resposta: ", csrfToken);
-
-            // Enviar o CSRF Token no cabeçalho
             const response = await api.post(
                 "/api/criar-secao",
                 {}, // Corpo da requisição

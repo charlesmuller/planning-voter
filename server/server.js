@@ -32,6 +32,8 @@ const io = socketIo(server, {
 const allowedOrigins = [
     'http://muller.vps-kinghost.net',
     'http://www.muller.vps-kinghost.net',
+    'https://charlesmuller.dev.br',
+    'https://www.charlesmuller.dev.br',
     CLIENT_URL // Inclui o valor atual da variável de ambiente
 ];
 
@@ -268,5 +270,5 @@ io.on('connection', (socket) => {
 
 // Inicia o servidor na porta especifica conforme env
 server.listen(API_PORT, () => {
-    console.log('Servidor WebSocket rodando na porta 4000');
+    console.log('Servidor WebSocket rodando na porta ' + API_PORT);
 });

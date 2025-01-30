@@ -5,14 +5,12 @@ import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 
 function Login() {
-    const [usuario, setUsuario] = useState(""); // Para armazenar o valor do email
+    const [usuario, setUsuario] = useState("");
     const navigate = useNavigate();
     const location = useLocation();
     const idSecao = new URLSearchParams(location.search).get("idSecao");
 
     useEffect(() => {
-        // console.log("ID da seção no /login:", idSecao);
-
     }, [location, navigate]);
 
     const handleLogin = (e) => {
@@ -38,7 +36,7 @@ function Login() {
                             id="text"
                             name="text"
                             value={usuario}
-                            onChange={(e) => setUsuario(e.target.value)} // Atualiza o estado com o input
+                            onChange={(e) => setUsuario(e.target.value)}
                         />
                     </div>
                     <Botao type="submit" texto="Entrar" />

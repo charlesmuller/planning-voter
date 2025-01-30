@@ -19,7 +19,6 @@ const csrfProtection = csrf({
     },
 });
 
-
 router.use((req, res, next) => {
     res.set({
         'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
@@ -31,15 +30,11 @@ router.use((req, res, next) => {
 });
 
 router.get('/csrf-token', csrfProtection, (req, res) => {
-    console.log("CSRF Middleware aplicado"); // Verificar se o middleware está sendo executado
     res.json({ csrfToken: req.csrfToken() });
 });
 
 // Criar uma nova seção
 router.post('/criar-secao', csrfProtection, (req, res) => {
-    console.log('Token CSRF recebido:', req.headers['x-csrf-token']);
-    console.log('Corpo da requisição:', req.body);
-
     const idSecao = `${Math.random().toString(36).substr(2, 8)}${Math.floor(Math.random() * 100)}`;
     const uniqueLink = `${urlLocal}/secao/${idSecao}`;
     const nome = idSecao;
@@ -69,7 +64,4 @@ router.get('/secao/:idSecao', (req, res) => {
         res.json({ valida: true });
     });
 });
-
-
-
 module.exports = router;

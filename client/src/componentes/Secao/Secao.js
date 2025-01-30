@@ -135,10 +135,7 @@ function Secao() {
         setVotos({});
         setBotaoSelecionado(null);
         setMostrarVotos(false);
-
-        console.log("Nova rodada iniciada, votos resetados localmente.");
     };
-
 
     const handleSair = () => {
         if (!usuario) {
