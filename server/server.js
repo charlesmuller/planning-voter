@@ -30,11 +30,9 @@ const io = socketIo(server, {
 });
 
 const allowedOrigins = [
-    'http://muller.vps-kinghost.net',
-    'http://www.muller.vps-kinghost.net',
-    'https://charlesmuller.dev.br',
-    'https://www.charlesmuller.dev.br',
-    CLIENT_URL // Inclui o valor atual da variável de ambiente
+    'https://planningvoter.kinghost.net',
+    'https://www.planningvoter.kinghost.net',
+    CLIENT_URL
 ];
 
 // Configurações de CORS
