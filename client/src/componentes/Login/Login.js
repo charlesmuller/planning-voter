@@ -9,6 +9,9 @@ function Login() {
     const navigate = useNavigate();
     const location = useLocation();
     const idSecao = new URLSearchParams(location.search).get("idSecao");
+    const [isObservador, setIsObservador] = useState(false);
+
+    // console.log("observador: ", isObservador);
 
     useEffect(() => {
     }, [location, navigate]);
@@ -16,7 +19,7 @@ function Login() {
     const handleLogin = (e) => {
         e.preventDefault();
         if (usuario) {
-            localStorage.setItem("usuario", usuario);
+            localStorage.setItem("usuario", JSON.stringify({ nome: usuario, isObservador }));
             navigate(`/secao/${idSecao}`, { state: { usuario } });
         } else {
             alert("Por favor, digite um usuário.");
@@ -38,6 +41,15 @@ function Login() {
                             value={usuario}
                             onChange={(e) => setUsuario(e.target.value)}
                         />
+                    </div>
+                    <div className="input-watcher">
+                        <input
+                            type="checkbox"
+                            id="observador"
+                            checked={isObservador}
+                            onChange={() => setIsObservador(!isObservador)}
+                        />
+                        <label htmlFor="observador">Entrar como observador</label>
                     </div>
                     <Botao type="submit" texto="Entrar" />
                 </form>

@@ -6,12 +6,12 @@ import { useNavigate, useParams } from "react-router-dom";
 import api from "../../api/api";
 
 function Secao() {
-    const [botaoSelecionado, setBotaoSelecionado] = useState(null); // Armazena o texto do botão selecionado
+    const [botaoSelecionado, setBotaoSelecionado] = useState(null);
     const [, setTexto] = useState('');
     const [votos, setVotos] = useState({});
     const [usuario, setUsuario] = useState("");
-    const [usuarios, setUsuarios] = useState([]); // Lista de usuários logados
-    const [mostrarVotos, setMostrarVotos] = useState(false); // Controla a exibição dos votos
+    const [usuarios, setUsuarios] = useState([]);
+    const [mostrarVotos, setMostrarVotos] = useState(false);
     const todosVotaram = usuarios.every((user) => votos[user]);
     const [, setMostrarVotosClicado] = useState(false);
     const { idSecao } = useParams();
@@ -21,12 +21,12 @@ function Secao() {
         const usuarioLogado = localStorage.getItem("usuario");
         if (!usuarioLogado || usuarioLogado.trim() === "") {
             navigate("/login", { state: { idSecao } });
-            return; // Evita executar o restante do código no efeito
+            return;
         }
 
         if (idSecao && usuarioLogado) {
             // Enviar evento de login ao servidor
-            setUsuario(usuarioLogado);
+            setUsuario(JSON.parse(usuarioLogado));
             socket.emit('usuarioLogado', { usuario: usuarioLogado, idSecao: idSecao });
 
             // Atualiza lista de usuários logados
@@ -38,7 +38,7 @@ function Secao() {
             socket.on("atualizarVotos", (votosRecebidos) => {
                 setVotos(votosRecebidos); // Atualiza os votos no estado local
             });
-            
+
         } else {
             alert("Seção inválida ou não encontrada!");
             navigate("/");
@@ -107,8 +107,6 @@ function Secao() {
         const novoVoto = { usuario, valor: textoBotao, idSecao };
         socket.emit('voto', novoVoto); // Envia o voto para o servidor
 
-
-        // Atualiza localmente os votos
         setVotos((prev) => ({
             ...prev,
             [usuario]: textoBotao,
@@ -170,18 +168,23 @@ function Secao() {
 
             <div className="content-data">
                 <div className="usuarios-logados">
-                    <h1>Bem-vindo, {usuario}</h1>
+                    <h1>Bem-vindo, {usuario.nome}</h1>
                     <div className="secao-nome">Seção ID: {idSecao}</div>
                     <p>Usuários Logados:</p>
                     <ul>
-                        {usuarios.map((user, index) => (
-                            <li key={index}>
-                                {user}
-                                <span>
-                                    {votos[user] ? " -> [votou]" : " -> [não votou]"}
-                                </span>
-                            </li>
-                        ))}
+                        {usuarios.map((user, index) => {
+                            let userObj = JSON.parse(user);
+                            const nomeUsuario = userObj.nome;
+                            const voto = votos[nomeUsuario];
+                            return (
+                                <li key={index}>
+                                    {nomeUsuario}
+                                    <span>
+                                        {voto ? " -> [votou]" : " -> [não votou]"}
+                                    </span>
+                                </li>
+                            );
+                        })}
                     </ul>
                 </div>
                 <div className="secao-content">

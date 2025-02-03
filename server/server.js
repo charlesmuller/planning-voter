@@ -7,27 +7,12 @@ const cookieParser = require('cookie-parser');
 const app = express();
 const server = http.createServer(app);
 const path = require('path');
-
 const CLIENT_URL = process.env.CLIENT_URL;
 const API_PORT = process.env.API_PORT || 4000;
-
 const usuariosLogados = [];
 const votos = {};
-const secoesRoutes = require('./routes/secoes'); // Caminho para o arquivo de rotas
-const secoes = {}; // Estrutura para armazenar usuários e votos por seção
-
-const io = socketIo(server, {
-    cors: {
-        origin: (origin, callback) => {
-            if (!origin || allowedOrigins.includes(origin)) {
-                callback(null, true);
-            } else {
-                callback(new Error('Not allowed by CORS'));
-            }
-        },
-        methods: ['GET', 'POST']
-    }
-});
+const secoesRoutes = require('./routes/secoes');
+const secoes = {};
 
 const allowedOrigins = [
     'https://planningvoter.kinghost.net',
@@ -35,7 +20,27 @@ const allowedOrigins = [
     CLIENT_URL
 ];
 
-// Configurações de CORS
+const io = socketIo(server, {
+    cors: {
+        origin: allowedOrigins,
+        methods: ['GET', 'POST'],
+        credentials: true
+    }
+});
+
+// const io = socketIo(server, {
+//     cors: {
+//         origin: (origin, callback) => {
+//             if (!origin || allowedOrigins.includes(origin)) {
+//                 callback(null, true);
+//             } else {
+//                 callback(new Error('Not allowed by CORS'));
+//             }
+//         },
+//         methods: ['GET', 'POST']
+//     }
+// });
+
 const corsOptions = {
     origin: (origin, callback) => {
         // Permite requisições sem origem (e.g., ferramentas como Postman)
@@ -45,33 +50,19 @@ const corsOptions = {
             callback(new Error('Not allowed by CORS'));
         }
     },
-    methods: ['GET', 'POST'], // Métodos permitidos
-    credentials: true // Permitir envio de cookies e cabeçalhos de autenticação
+    methods: ['GET', 'POST'],
+    credentials: true
 };
 
-// Middleware de CORS com as opções configuradas
-app.use(cors(corsOptions));
-
-// Middleware para lidar com cookies
 app.use(cookieParser());
-
-// Middleware para tratar JSON no body das requisições
+app.use(cors(corsOptions));
 app.use(express.json());
-
-// Define a rota básica do servidor (pode ser útil para verificar se o servidor está funcionando)
 app.get('/', (req, res) => {
     res.send('Servidor WebSocket funcionando');
 });
-
-app.use(express.json()); // Middleware para tratar JSON no body das requisições
-
-// Registra as rotas de /server/routes/secoes.js
+app.use(express.json());
 app.use('/api', secoesRoutes);
-
-// Middleware para servir o React
 app.use(express.static(path.join(__dirname, 'frontend', 'build')));
-
-// Configuração de erro padrão
 app.use((err, req, res, next) => {
     if (err.code === 'EBADCSRFTOKEN') {
         return res.status(403).json({ error: 'Token CSRF inválido ou ausente' });
@@ -80,20 +71,18 @@ app.use((err, req, res, next) => {
     res.status(500).send('Erro interno do servidor');
 });
 
-// Escutando novas conexões
 io.on('connection', (socket) => {
     console.log('conectado server');
 
     // Evento para quando um usuário loga
     socket.on('usuarioLogado', (data) => {
         console.log('Iniciado evento usuarioLogado');
-        const { usuario, idSecao } = data;
+        const { usuario, idSecao, isObservador } = data;
 
         console.log('Usuário conectado: ', usuario);
         console.log('ID da seção server: ', idSecao);
+        console.log('Is observador: ', isObservador);
 
-
-        // Verifica se o usuário já está na lista para evitar duplicações
         if (!usuariosLogados.includes(usuario)) {
             usuariosLogados.push(usuario);
         }
@@ -133,13 +122,12 @@ io.on('connection', (socket) => {
         const { usuario, valor, idSecao } = data;
         console.log('dados recebidos no server -> ', data);
 
+        console.log(`Seção marota ${idSecao}: `, idSecao);
         // Verifica se a seção existe
-        if (secoes[idSecao]) {
-            secoes[idSecao].votos[usuario] = valor;
-
+        if (idSecao) {
             console.log(`Voto do usuário ${usuario} na seção ${idSecao}: ${valor}`);
-            io.to(idSecao).emit("atualizarVotos", secoes[idSecao].votos);
-            console.log(`Votos atualizados para os usuários na seção ${idSecao}: ${JSON.stringify(secoes[idSecao].votos)}`);
+            io.to(idSecao).emit("atualizarVotos", idSecao['valor']);
+            console.log(`Votos atualizados para os usuários na seção ${idSecao}: ${votos}`);
             console.log('------fim voto------\n');
         }
     });
@@ -150,8 +138,6 @@ io.on('connection', (socket) => {
     socket.on("pedirVotos", (data) => {
         console.log("Iniciado evento pedirVotos");
         const { usuario, idSecao, votos } = data;
-
-
         // Envia os votos de volta para o cliente
         io.emit("receberVotos", votos);
         console.log("Votos enviados para o cliente (evento pedir votos):", votos);

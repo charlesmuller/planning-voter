@@ -13,10 +13,13 @@ function CriarSecao() {
         try {
             // Obter o token CSRF com withCredentials
             const tokenResponse = await api.get("/api/csrf-token", {
+                
                 withCredentials: true, // Garantir que o cookie CSRF seja enviado
             });
+            console.log("CSRF Token recebido:", tokenResponse.data.csrfToken);
 
             const csrfToken = tokenResponse.data.csrfToken;
+            
             const response = await api.post(
                 "/api/criar-secao",
                 {}, // Corpo da requisição

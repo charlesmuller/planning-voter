@@ -16,3 +16,16 @@
 .login-container {
     max-height: 100vh;
 }
+
+.input-watcher {
+    display: flex;
+
+    >input {
+        margin-bottom: 21px;
+        width: 20px;
+        cursor: pointer;
+    }
+    >label {
+        cursor: pointer;
+    }
+}
