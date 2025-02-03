@@ -185,7 +185,7 @@ function Secao() {
                     </ul>
                 </div>
                 <div className="secao-content">
-                    {["1", "2", "3", "5", "8", "13", "21"].map((valor) => (
+                    {["1", "2", "3", "5", "8", "13", "21", "=D"].map((valor) => (
                         <Botao
                             key={valor}
                             texto={valor}
