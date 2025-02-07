@@ -8,7 +8,9 @@ function Login() {
     const [usuario, setUsuario] = useState("");
     const navigate = useNavigate();
     const location = useLocation();
-    const idSecao = new URLSearchParams(location.search).get("idSecao");
+    const idSecaoFromState = location.state?.idSecao;
+    const idSecaoFromQuery = new URLSearchParams(location.search).get("idSecao");
+    const idSecao = idSecaoFromState || idSecaoFromQuery;
 
     useEffect(() => {
     }, [location, navigate]);

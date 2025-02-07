@@ -19,84 +19,79 @@ function Secao() {
 
     useEffect(() => {
         const usuarioLogado = localStorage.getItem("usuario");
+
         if (!usuarioLogado || usuarioLogado.trim() === "") {
             navigate("/login", { state: { idSecao } });
-            return; // Evita executar o restante do código no efeito
+            return;
         }
 
         if (idSecao && usuarioLogado) {
-            // Enviar evento de login ao servidor
+            // Define o usuário no estado
             setUsuario(usuarioLogado);
-            socket.emit('usuarioLogado', { usuario: usuarioLogado, idSecao: idSecao });
+console.log('idSecao no front-> ', idSecao);
+            // Envia o evento de login para a seção correta
+            socket.emit('usuarioLogado', { usuario: usuarioLogado, idSecao });
 
-            // Atualiza lista de usuários logados
+            // Escuta o evento "usuariosLogados" e atualiza somente os usuários da seção atual
             socket.on("usuariosLogados", (usuariosLogados) => {
+                console.log(`Usuários logados na seção ${idSecao}:`, usuariosLogados);
                 setUsuarios([...new Set(usuariosLogados)]);
             });
 
-            // Atualiza os votos em tempo real
+            // Escuta o evento "atualizarVotos" e atualiza os votos para a seção atual
             socket.on("atualizarVotos", (votosRecebidos) => {
-                setVotos(votosRecebidos); // Atualiza os votos no estado local
+                console.log(`Votos atualizados na seção ${idSecao}:`, votosRecebidos);
+                setVotos(votosRecebidos);
             });
-            
+
+            // Escuta os eventos de votos (para a seção atual)
+            socket.on("receberVotos", (votosRecebidos) => {
+                setVotos(votosRecebidos);
+            });
+
+            socket.on("mostrarVotos", (votosRecebidos) => {
+                setVotos(votosRecebidos);
+                setMostrarVotos(true);
+            });
+
+            socket.on("resetarRodada", () => {
+                setBotaoSelecionado(null);
+                setMostrarVotos(false);
+            });
+
+            // Verifica se a seção é válida (exemplo de requisição API)
+            const checkSecaoExistente = async () => {
+                try {
+                    const response = await api.get(`/api/secao/${idSecao}`);
+                    if (response.status >= 200 && response.status < 300) {
+                        if (!response.data.valida) {
+                            setTimeout(() => navigate('/criarsecao'), 2000);
+                        }
+                    } else {
+                        console.error(`Erro na requisição: ${response.status} - ${response.config.url}`);
+                        setTimeout(() => navigate('/criarsecao'), 2000);
+                    }
+                } catch (error) {
+                    console.error('Erro ao fazer a requisição:', error);
+                    setTimeout(() => navigate('/criarsecao'), 2000);
+                }
+            };
+
+            checkSecaoExistente();
         } else {
             alert("Seção inválida ou não encontrada!");
             navigate("/");
         }
 
-        // Recebe votos do servidor
-        socket.on("receberVotos", (votosRecebidos) => {
-            setVotos(votosRecebidos);
-        });
-
-        socket.on("mostrarVotos", (votosRecebidos) => {
-            setVotos(votosRecebidos); // Atualiza os votos com os recebidos do servidor
-            setMostrarVotos(true); // Atualiza para mostrar os votos
-        });
-
-        socket.on("resetarRodada", () => {
-            setBotaoSelecionado(null); // Remove a seleção do botão
-            setMostrarVotos(false);    // Oculta os votos
-        });
-
-        const checkSecaoExistente = async () => {
-            try {
-                const response = await api.get(`/api/secao/${idSecao}`);
-
-                if (response.status >= 200 && response.status < 300) {
-                    const data = response.data;
-
-                    if (!data.valida) {
-                        setTimeout(() => {
-                            navigate('/criarsecao');
-                        }, 2000);
-                    }
-                } else {
-                    console.error(`Erro na requisição: ${response.status} - ${response.config.url}`);
-                    setTimeout(() => {
-                        navigate('/criarsecao');
-                    }, 2000);
-                }
-            } catch (error) {
-                // Captura qualquer erro de rede ou erro gerado pelo axios
-                console.error('Erro ao fazer a requisição:', error); // Log do erro
-                setTimeout(() => {
-                    navigate('/criarsecao');
-                }, 2000);
-            }
-        };
-
-        checkSecaoExistente();
-
+        // Limpa todos os eventos quando o componente desmontar ou quando idSecao mudar
         return () => {
+            socket.off("usuariosLogados");
             socket.off("atualizarVotos");
             socket.off("receberVotos");
-            socket.off("usuariosLogados");
             socket.off("mostrarVotos");
-            socket.off("resetarEstado");
+            socket.off("resetarRodada");
         };
     }, [idSecao, navigate]);
-
 
     const handleVotacao = (textoBotao) => {
         // Envia o voto para o servidor
@@ -144,7 +139,7 @@ function Secao() {
         }
 
         // Emite o evento para o servidor para remover o usuário da lista de logados
-        socket.emit("sair", { usuario });
+        socket.emit("sair", { usuario, idSecao });
 
         // Limpa o usuário do estado local
         localStorage.removeItem("usuario");
