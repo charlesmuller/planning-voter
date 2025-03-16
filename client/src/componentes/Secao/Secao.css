@@ -10,7 +10,7 @@
     gap: 10px;
     justify-content: center;
     align-items: center;
-    margin-top: 10%;
+    padding: 12% 0% 0% 0%;
 }
 
 .secao-botao-clicado {
@@ -18,25 +18,22 @@
     border: none;
     border-radius: 10px;
     cursor: pointer;
-    font-size: 22px;
+    font-size: 35px;
     font-weight: bold;
     justify-content: center;
     align-items: center;
     transform: scale(1.3);
     background-color: gray;
     color: white;
+    line-height: 1;
+    vertical-align: middle;
+    transform-origin: center center;
 }
 
 .usuarios-logados {
     display: flex;
-    background-color: #5a95e8;
-    color: black;
-    padding: 20px 20px;
-    border: none;
-    border-radius: 10px;
-    font-size: 14px;
-    flex-direction: column;
-    align-items: flex-start;
+    flex-direction: row;
+    gap: 10px;
 }
 
 .usuarios-logados .secao-nome {
@@ -67,6 +64,41 @@
     width: 100px;
 }
 
+.usuario-card {
+    background: white;
+    border: 2px solid #ccc;
+    border-radius: 10px;
+    padding: 10% 3% 10% 3%;
+    text-align: center;
+    min-width: 120px;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+    transition: background 0.2s ease-in-out, color 0.2s ease-in-out;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    align-content: space-between;
+}
+
+.usuario-card.votou {
+    background: gray;
+    color: black;
+}
+
+.status-voto {
+    display: block;
+    margin-top: 5px;
+    font-size: 14px;
+    color: black;
+}
+
+.voto-valor {
+    display: block;
+    margin-top: 8px;
+    font-weight: bold;
+    font-size: 32px;
+    color: #000;
+}
+
 .mostrar-votos {
     background-color: #5a95e8;
     color: black;
@@ -84,24 +116,17 @@
     opacity: 0.6;
 }
 
-.barra-superior {
-    display: flex;
-    align-items: center;
-    flex-direction: row;
-    margin-top: 2%;
-}
-
 .content-data {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-top: 2%;
+    margin-top: 5%;
 }
 
 .secao-mostrar {
     display: flex;
     justify-content: center;
-    margin-top: 12%;
+    padding: 9% 0% 0% 0%;
 }
 
 .mostrar-votos .mostrar-votos {
@@ -136,4 +161,47 @@
 
 .votos-usuarios-visiveis ul {
     margin-right: 38px;
+}
+
+.barra-superior {
+    flex-direction: row;
+    margin-top: 2%;
+    background-color: white;
+    border: 1px solid gray;
+    border-radius: 10px;
+    padding: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 40px;
+}
+
+.menu-secao-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.menu-secao-button {
+    cursor: pointer;
+    background-color: white;
+    border: 2px solid #ccc;
+    border-radius: 50%;
+    padding: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease-in-out;
+}
+
+.menu-secao-button:hover {
+    border-color: gray;
+    background-color: gray;
+}
+
+.menu-secao-text {
+    font-size: 12px;
+    color: #666;
+    text-align: center;
 }

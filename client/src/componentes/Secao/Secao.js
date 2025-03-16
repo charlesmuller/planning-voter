@@ -4,6 +4,8 @@ import socket from '../../comunication/socket';
 import { useState, useEffect } from "react"
 import { useNavigate, useParams } from "react-router-dom";
 import api from "../../api/api";
+import Icon from '@mdi/react';
+import { mdiLogout, mdiShareVariant, mdiRefresh } from '@mdi/js';
 
 function Secao() {
     const [botaoSelecionado, setBotaoSelecionado] = useState(null); // Armazena o texto do botão selecionado
@@ -16,9 +18,12 @@ function Secao() {
     const [, setMostrarVotosClicado] = useState(false);
     const { idSecao } = useParams();
     const navigate = useNavigate();
+    const [urlSecao] = useState(window.location.href);
+    const [emojiAleatorio, setEmojiAleatorio] = useState(null);
 
     useEffect(() => {
         const usuarioLogado = localStorage.getItem("usuario");
+        setEmojiAleatorio(emojis[Math.floor(Math.random() * emojis.length)]);
 
         if (!usuarioLogado || usuarioLogado.trim() === "") {
             navigate("/login", { state: { idSecao } });
@@ -28,7 +33,7 @@ function Secao() {
         if (idSecao && usuarioLogado) {
             // Define o usuário no estado
             setUsuario(usuarioLogado);
-console.log('idSecao no front-> ', idSecao);
+
             // Envia o evento de login para a seção correta
             socket.emit('usuarioLogado', { usuario: usuarioLogado, idSecao });
 
@@ -113,7 +118,11 @@ console.log('idSecao no front-> ', idSecao);
     const handleClickChange = (textoBotao) => {
         setBotaoSelecionado(textoBotao); // Atualiza o botão selecionado
         setTexto(textoBotao); // Atualiza o texto a ser exibido
-        handleVotacao(textoBotao); // Envia o voto
+        if (textoBotao === "emoji") {
+            handleVotacao(emojiAleatorio ? emojiAleatorio.emoji : "emoji");
+        } else {
+            handleVotacao(textoBotao);
+        }
     };
 
     const handleMostrarVotos = () => {
@@ -123,6 +132,7 @@ console.log('idSecao no front-> ', idSecao);
     };
 
     const handleNovaRodada = () => {
+        console.log("Nova rodada iniciada!");
         // Emite o evento para o servidor iniciar a nova rodada
         socket.emit("novaRodada", { idSecao, votos });
 
@@ -149,38 +159,100 @@ console.log('idSecao no front-> ', idSecao);
         navigate("/criarsecao"); // Substitua "/login" pela rota que deseja redirecionar
     };
 
+    const handleCopy = () => {
+        navigator.clipboard.writeText(urlSecao)
+            .then(() => {
+                alert("Link copiado para a área de transferência!");
+            })
+            .catch((err) => {
+                console.error("Erro ao copiar o link: ", err);
+            });
+    };
+
+    const emojis = [
+        { nome: "morango", emoji: "🍓" },
+        { nome: "hamburguer", emoji: "🍔" },
+        { nome: "pizza", emoji: "🍕" },
+        { nome: "sorvete", emoji: "🍦" },
+        { nome: "cachorro-quente", emoji: "🌭" },
+        { nome: "batata frita", emoji: "🍟" },
+        { nome: "bolo", emoji: "🎂" },
+        { nome: "pudim", emoji: "🍮" },
+        { nome: "taco", emoji: "🌮" },
+        { nome: "sushi", emoji: "🍣" },
+        { nome: "maçã", emoji: "🍎" },
+        { nome: "banana", emoji: "🍌" },
+        { nome: "abacaxi", emoji: "🍍" },
+        { nome: "uvas", emoji: "🍇" },
+        { nome: "laranja", emoji: "🍊" },
+        { nome: "melancia", emoji: "🍉" },
+        { nome: "pipoca", emoji: "🍿" },
+        { nome: "chocolate", emoji: "🍫" },
+        { nome: "caramelo", emoji: "🍬" },
+        { nome: "café", emoji: "☕" },
+    ];
+
+    const obterEmoji = (nome) => {
+        const emoji = emojis.find(e => e.nome === nome);
+        return emoji ? emoji.emoji : nome; // Se não encontrar, retorna o nome como está
+    };
+
     return (
         <div className="secao-main">
             <div className="barra-superior">
-                <Botao
-                    texto="Sair"
-                    onClickChange={handleSair}
-                />
-                <Botao
-                    texto="Nova Rodada"
-                    onClickChange={handleNovaRodada}
-                    className="nova-rodada" // Classe adicional para estilização, se necessário
-                />
+                <div className="menu-secao-container">
+                    <Icon
+                        path={mdiLogout}
+                        size={1}
+                        onClick={handleSair}
+                        className="menu-secao-button"
+                    />
+                    <span className="menu-secao-text">Sair</span>
+                </div>
+
+                <div className="menu-secao-container">
+                    <Icon
+                        path={mdiRefresh}
+                        size={1}
+                        className="menu-secao-button"
+                        onClick={handleNovaRodada}
+                    />
+                    <span className="menu-secao-text">Reiniciar</span>
+                </div>
+                <div className="menu-secao-container">
+                    <Icon
+                        path={mdiShareVariant}
+                        size={1}
+                        className="menu-secao-button"
+                        onClick={handleCopy}
+                    />
+                    <span className="menu-secao-text">Convide</span>
+                </div>
             </div>
 
             <div className="content-data">
                 <div className="usuarios-logados">
-                    <h1>Bem-vindo, {usuario}</h1>
-                    <div className="secao-nome">Seção ID: {idSecao}</div>
-                    <p>Usuários Logados:</p>
-                    <ul>
-                        {usuarios.map((user, index) => (
-                            <li key={index}>
-                                {user}
-                                <span>
-                                    {votos[user] ? " -> [votou]" : " -> [não votou]"}
+                    {usuarios.map((user, index) => (
+                        <div
+                            key={index}
+                            className={`usuario-card ${votos[user] ? "votou" : ""}`}
+                        >
+                            <strong>{user}</strong>
+                            <span className="status-voto">
+                                {votos[user] ? "✅ Votou" : "❌ Não votou"}
+                            </span>
+
+                            {mostrarVotos && votos[user] && (
+                                <span className="voto-valor">
+                                    {typeof votos[user] === "object" ? votos[user].emoji : obterEmoji(votos[user])}
                                 </span>
-                            </li>
-                        ))}
-                    </ul>
+                            )}
+                        </div>
+                    ))}
                 </div>
+
                 <div className="secao-content">
-                    {["1", "2", "3", "5", "8", "13", "21", "=D"].map((valor) => (
+                    {["1", "2", "3", "5", "8", "13", "21"].map((valor) => (
                         <Botao
                             key={valor}
                             texto={valor}
@@ -189,33 +261,23 @@ console.log('idSecao no front-> ', idSecao);
                             className={botaoSelecionado === valor ? 'secao-botao-clicado' : ''}
                         />
                     ))}
-                </div>
-
-            </div>
-            <div className="mostrar-votos-main">
-                <div className="secao-mostrar">
                     <Botao
-                        texto="Mostrar Votos"
-                        onClickChange={handleMostrarVotos}
-                        disabled={!todosVotaram}
-                        className="mostrar-votos" // Classe adicional
+                        key="emoji"
+                        texto={emojiAleatorio ? emojiAleatorio.emoji : ""}
+                        foiClicado={botaoSelecionado === "emoji"}
+                        onClickChange={() => handleClickChange("emoji")}
+                        className={botaoSelecionado === "emoji" ? 'secao-botao-clicado' : ''}
                     />
-                </div>
 
-                <div className="secao-votos">
-                    <p>Votos dos usuários:</p>
-                    {mostrarVotos && Object.keys(votos).length > 0 && (
-                        <div className="votos-usuarios-visiveis">
-                            <ul>
-                                {usuarios.map((user, index) => (
-                                    <li key={index}>
-                                        {user}: <span className="voto-valor">{votos[user] || "Ainda não votou"}</span>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    )}
                 </div>
+            </div>
+            <div className="secao-mostrar">
+                <Botao
+                    texto="Mostrar Votos"
+                    onClickChange={handleMostrarVotos}
+                    disabled={!todosVotaram}
+                    className="mostrar-votos" // Classe adicional
+                />
             </div>
         </div>
     )
