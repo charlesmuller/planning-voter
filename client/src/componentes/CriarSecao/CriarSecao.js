@@ -1,77 +1,65 @@
 import "./CriarSecao.css";
-import Menu from "../Menu/Menu";
 import Botao from "../Botao/Botao";
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../../api/api";
 
 function CriarSecao() {
+    const [usuario, setUsuario] = useState("");
     const [urlSecao, setUrlSecao] = useState("");
-    const [linkGerado, setLinkGerado] = useState(false);
+    const navigate = useNavigate();
 
-    // Função para gerar a URL da seção
     const handleGerarURL = async () => {
+        if (!usuario) {
+            alert("Por favor, digite seu nome de usuário.");
+            return;
+        }
+
         try {
-            // Obter o token CSRF com withCredentials
             const tokenResponse = await api.get("/api/csrf-token", {
-                withCredentials: true, // Garantir que o cookie CSRF seja enviado
+                withCredentials: true,
             });
 
             const csrfToken = tokenResponse.data.csrfToken;
             const response = await api.post(
                 "/api/criar-secao",
-                {}, // Corpo da requisição
+                {},
                 {
-                    headers: {
-                        "X-CSRF-Token": csrfToken, // Adicionando o token CSRF aqui
-                    },
-                    withCredentials: true, // Garantir que o cookie CSRF seja enviado
+                    headers: { "X-CSRF-Token": csrfToken },
+                    withCredentials: true,
                 }
             );
 
             const idSecao = response.data.idSecao;
             const urlBase = process.env.REACT_APP_URL_LOCAL || "http://localhost:3000";
-            const urlCompleta = `${urlBase}/login?idSecao=${idSecao}`;
+            const urlCompleta = `${urlBase}/secao/${idSecao}`;
+
             setUrlSecao(urlCompleta);
-            setLinkGerado(true);
+
+            // Armazena o nome do usuário e redireciona automaticamente
+            localStorage.setItem("usuario", usuario);
+            navigate(`/secao/${idSecao}`, { state: { usuario } });
         } catch (error) {
             console.error("Erro ao gerar URL:", error);
         }
     };
 
-    const handleCopy = () => {
-        navigator.clipboard.writeText(urlSecao)
-            .then(() => {
-                alert("Link copiado para a área de transferência!");
-            })
-            .catch((err) => {
-                console.error("Erro ao copiar o link: ", err);
-            });
-    };
-
     return (
         <div className="criar-container">
-            <Menu />
             <div className="secao-container">
-                <form>
-                    <h1>Criar Seção de Planning</h1>
+                <form onSubmit={(e) => e.preventDefault()}>
+                    <h1>Criar seção de Planning Voter</h1>
 
-                    <Botao texto="Gerar URL" onClickChange={handleGerarURL} />
-
-                    {linkGerado && (
-                        <div className="link-gerado">
-                            <p>Compartilhe o link:</p>
-                            <input
-                                type="text"
-                                readOnly
-                                value={urlSecao}
-                            />
-
-                            <Botao texto="Copiar" onClickChange={handleCopy} />
-                        </div>
-
-                    )}
-
-                </form>
+                    <div className="input-container">
+                        <label>Digite seu nome de usuário</label>
+                        <input
+                            type="text"
+                            value={usuario}
+                            onChange={(e) => setUsuario(e.target.value)}
+                        />
+                    </div>
+                    <Botao texto="Criar e entrar" onClickChange={handleGerarURL} />
+                 </form>
             </div>
         </div>
     );
