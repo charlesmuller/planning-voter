@@ -137,6 +137,7 @@ function Secao() {
         socket.emit("novaRodada", { idSecao, votos });
 
         // Atualiza o estado local para refletir imediatamente no cliente
+        setEmojiAleatorio(emojis[Math.floor(Math.random() * emojis.length)]);
         setVotos({});
         setBotaoSelecionado(null);
         setMostrarVotos(false);
