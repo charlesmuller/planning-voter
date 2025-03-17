@@ -9,7 +9,9 @@ function CriarSecao() {
     const [urlSecao, setUrlSecao] = useState("");
     const navigate = useNavigate();
 
-    const handleGerarURL = async () => {
+    const handleGerarURL = async (e) => {
+        e.preventDefault();
+
         if (!usuario) {
             alert("Por favor, digite seu nome de usuário.");
             return;
@@ -47,7 +49,7 @@ function CriarSecao() {
     return (
         <div className="criar-container">
             <div className="secao-container">
-                <form onSubmit={(e) => e.preventDefault()}>
+                <form onSubmit={handleGerarURL}>
                     <h1>Criar seção de Planning Voter</h1>
 
                     <div className="input-container">
@@ -58,7 +60,7 @@ function CriarSecao() {
                             onChange={(e) => setUsuario(e.target.value)}
                         />
                     </div>
-                    <Botao texto="Criar e entrar" onClickChange={handleGerarURL} />
+                    <Botao texto="Criar e entrar" type="submit"/>
                  </form>
             </div>
         </div>

@@ -20,6 +20,10 @@ function Secao() {
     const navigate = useNavigate();
     const [urlSecao] = useState(window.location.href);
     const [emojiAleatorio, setEmojiAleatorio] = useState(null);
+    // const [copyMessage, setCopyMessage] = useState("");
+    const [tooltip, setTooltip] = useState({ visible: false, x: 0, y: 0 });
+
+
 
     useEffect(() => {
         const usuarioLogado = localStorage.getItem("usuario");
@@ -160,10 +164,17 @@ function Secao() {
         navigate("/criarsecao"); // Substitua "/login" pela rota que deseja redirecionar
     };
 
-    const handleCopy = () => {
-        navigator.clipboard.writeText(urlSecao)
+    const handleCopy = (event) => {
+        navigator.clipboard.writeText(window.location.href)
             .then(() => {
-                alert("Link copiado para a área de transferência!");
+                // Obtém a posição do mouse no momento do clique
+                const { clientX, clientY } = event;
+
+                // Exibe o tooltip próximo ao cursor
+                setTooltip({ visible: true, x: clientX, y: clientY });
+
+                // Esconde o tooltip após 2 segundos
+                setTimeout(() => setTooltip({ visible: false, x: 0, y: 0 }), 2000);
             })
             .catch((err) => {
                 console.error("Erro ao copiar o link: ", err);
@@ -229,6 +240,17 @@ function Secao() {
                     />
                     <span className="menu-secao-text">Convide</span>
                 </div>
+                {tooltip.visible && (
+                    <div
+                        className="tooltip"
+                        style={{
+                            top: tooltip.y + 10 + "px",
+                            left: tooltip.x + 10 + "px",
+                        }}
+                    >
+                        Link copiado! ✅
+                    </div>
+                )}
             </div>
 
             <div className="content-data">

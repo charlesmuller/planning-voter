@@ -205,3 +205,24 @@
     color: #666;
     text-align: center;
 }
+
+.tooltip {
+    position: fixed;
+    background: rgba(0, 0, 0, 0.75);
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 5px;
+    font-size: 14px;
+    pointer-events: none;
+    white-space: nowrap;
+    opacity: 0;
+    transform: translateY(-5px);
+    animation: fadeInOut 2s ease-in-out;
+}
+
+@keyframes fadeInOut {
+    0% { opacity: 0; transform: translateY(-5px); }
+    20% { opacity: 1; transform: translateY(0); }
+    80% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(-5px); }
+}
