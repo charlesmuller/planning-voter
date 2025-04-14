@@ -8,22 +8,18 @@ import Icon from '@mdi/react';
 import { mdiLogout, mdiShareVariant, mdiRefresh } from '@mdi/js';
 
 function Secao() {
-    const [botaoSelecionado, setBotaoSelecionado] = useState(null); // Armazena o texto do botão selecionado
+    const [botaoSelecionado, setBotaoSelecionado] = useState(null);
     const [, setTexto] = useState('');
     const [votos, setVotos] = useState({});
     const [usuario, setUsuario] = useState("");
-    const [usuarios, setUsuarios] = useState([]); // Lista de usuários logados
-    const [mostrarVotos, setMostrarVotos] = useState(false); // Controla a exibição dos votos
-    const todosVotaram = usuarios.every((user) => votos[user]);
+    const [usuarios, setUsuarios] = useState([]);
+    const [mostrarVotos, setMostrarVotos] = useState(false);
     const [, setMostrarVotosClicado] = useState(false);
     const { idSecao } = useParams();
     const navigate = useNavigate();
     const [urlSecao] = useState(window.location.href);
     const [emojiAleatorio, setEmojiAleatorio] = useState(null);
-    // const [copyMessage, setCopyMessage] = useState("");
     const [tooltip, setTooltip] = useState({ visible: false, x: 0, y: 0 });
-
-
 
     useEffect(() => {
         const usuarioLogado = localStorage.getItem("usuario");
@@ -298,7 +294,6 @@ function Secao() {
                 <Botao
                     texto="Mostrar Votos"
                     onClickChange={handleMostrarVotos}
-                    disabled={!todosVotaram}
                     className="mostrar-votos" // Classe adicional
                 />
             </div>
