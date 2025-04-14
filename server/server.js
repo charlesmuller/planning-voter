@@ -98,22 +98,20 @@ io.on('connection', (socket) => {
 
         // Verifica se o usuário já está em outra seção e o remove antes de adicionar à nova
         for (const secao in secoes) {
-            if (secoes[secao].usuarios.includes(usuario) && secao !== idSecao) {
+            const index = secoes[secao].usuarios.findIndex(u => u.nome === usuario);
+            if (index !== -1 && secao !== idSecao) {
                 console.log(`Usuário ${usuario} estava na seção ${secao}, removendo antes de adicionar à seção ${idSecao}`);
-                secoes[secao].usuarios = secoes[secao].usuarios.filter(u => u !== usuario);
-                io.to(secao).emit("usuariosLogados", secoes[secao].usuarios); // Atualiza a seção antiga
+                secoes[secao].usuarios.splice(index, 1);
+                io.to(secao).emit("usuariosLogados", secoes[secao].usuarios.map(u => u.nome)); // Atualiza a seção antiga
             }
         }
 
         // Adiciona o usuário à seção apenas se ainda não estiver nela
-        if (!secoes[idSecao].usuarios.includes(usuario)) {
-            secoes[idSecao].usuarios.push(usuario);
+        if (!secoes[idSecao].usuarios.some(u => u.nome === usuario)) {
+            secoes[idSecao].usuarios.push({ id: socket.id, nome: usuario });
             console.log(`Adicionou o usuário: ${usuario} à seção: ${idSecao}`);
         }
 
-        console.log(`Usuários na seção ${idSecao}: ${secoes[idSecao].usuarios}`);
-
-        // Adiciona o socket ao "room" da seção correta
         socket.join(idSecao);
 
         // Emite a atualização apenas para a seção correta
@@ -121,7 +119,7 @@ io.on('connection', (socket) => {
 
         // Envia os votos apenas para o usuário recém-logado
         socket.emit("atualizarVotos", secoes[idSecao].votos);
-        console.log(`Lista de logados na seção ${idSecao}: ${secoes[idSecao].usuarios}`);
+        console.log(`Lista de logados na seção ${idSecao}: ${JSON.stringify(secoes[idSecao].usuarios)}`);
         console.log('------fim usuarioLogado------\n');
     });
 
@@ -130,7 +128,7 @@ io.on('connection', (socket) => {
         console.log('Iniciado evento voto');
 
         const { usuario, valor, idSecao } = data;
-        console.log('dados recebidos no server -> ', data);
+        console.log('dados recebidos no server evento voto -> ', data);
 
         // Verifica se a seção existe
         if (secoes[idSecao]) {
@@ -163,7 +161,7 @@ io.on('connection', (socket) => {
 
     socket.on("sair", (data) => {
         console.log('Iniciado evento sair');
-        console.log('dados recebidos no server -> ', data);
+        console.log('dados recebidos no server evento sair -> ', data);
         const { usuario, idSecao } = data;
 
         if (secoes[idSecao]) {
@@ -187,7 +185,7 @@ io.on('connection', (socket) => {
         }
 
         // Emite para todos os clientes a lista atualizada de usuários logados
-        io.to(idSecao).emit('usuariosLogados', secoes[idSecao].usuarios);
+        io.to(idSecao).emit('usuariosLogados', secoes[idSecao].usuarios.map(u => u.nome));
         console.log('------fim sair------\n');
 
     });
@@ -195,7 +193,7 @@ io.on('connection', (socket) => {
     socket.on("novaRodada", (data) => {
         console.log('Iniciado evento novaRodada');
         const { idSecao, votos } = data;
-        console.log('dados recebidos no server -> ', data);
+        console.log('dados recebidos no server evento novaRodada -> ', data);
 
         if (typeof votos === 'object') {
             console.log(`Nova rodada iniciada. Votos resetados. ${JSON.stringify(idSecao)}`);
@@ -205,7 +203,6 @@ io.on('connection', (socket) => {
                 console.log(`[dentro do for] Removendo voto do usuário ${key}`);
                 delete votos[key];
             }
-
         }
 
         if (secoes[idSecao]) {
@@ -234,20 +231,20 @@ io.on('connection', (socket) => {
 
         // Procura o usuário em todas as seções
         for (const [idSecao, dadosSecao] of Object.entries(secoes)) {
-            const index = dadosSecao.usuarios.indexOf(socket.id);
+            const index = dadosSecao.usuarios.findIndex(u => u.id === socket.id);
             if (index !== -1) {
                 usuarioDesconectado = dadosSecao.usuarios[index];
                 secaoDesconectado = idSecao;
                 dadosSecao.usuarios.splice(index, 1); // Remove o usuário da seção
-                console.log(`Usuário desconectado: ${usuarioDesconectado} da seção ${secaoDesconectado}`);
+                console.log(`Usuário desconectado: ${JSON.stringify(usuarioDesconectado)} da seção ${secaoDesconectado}`);
                 break;
             }
         }
 
         if (usuarioDesconectado && secaoDesconectado) {
-            if (secoes[secaoDesconectado]?.votos[usuarioDesconectado]) {
-                delete secoes[secaoDesconectado].votos[usuarioDesconectado];
-                console.log(`Voto do usuário ${usuarioDesconectado} foi removido.`);
+            if (secoes[secaoDesconectado]?.votos[usuarioDesconectado.nome]) {
+                delete secoes[secaoDesconectado].votos[usuarioDesconectado.nome];
+                console.log(`Voto do usuário ${usuarioDesconectado.nome} foi removido.`);
             }
 
             // Atualiza apenas a seção correta

@@ -8,22 +8,19 @@ import Icon from '@mdi/react';
 import { mdiLogout, mdiShareVariant, mdiRefresh } from '@mdi/js';
 
 function Secao() {
-    const [botaoSelecionado, setBotaoSelecionado] = useState(null); // Armazena o texto do botão selecionado
+    const [botaoSelecionado, setBotaoSelecionado] = useState(null);
     const [, setTexto] = useState('');
     const [votos, setVotos] = useState({});
     const [usuario, setUsuario] = useState("");
-    const [usuarios, setUsuarios] = useState([]); // Lista de usuários logados
-    const [mostrarVotos, setMostrarVotos] = useState(false); // Controla a exibição dos votos
+    const [usuarios, setUsuarios] = useState([]);
+    const [mostrarVotos, setMostrarVotos] = useState(false);
     const todosVotaram = usuarios.every((user) => votos[user]);
     const [, setMostrarVotosClicado] = useState(false);
     const { idSecao } = useParams();
     const navigate = useNavigate();
     const [urlSecao] = useState(window.location.href);
     const [emojiAleatorio, setEmojiAleatorio] = useState(null);
-    // const [copyMessage, setCopyMessage] = useState("");
     const [tooltip, setTooltip] = useState({ visible: false, x: 0, y: 0 });
-
-
 
     useEffect(() => {
         const usuarioLogado = localStorage.getItem("usuario");
@@ -256,18 +253,14 @@ function Secao() {
             <div className="content-data">
                 <div className="usuarios-logados">
                     {usuarios.map((user, index) => (
-                        <div
-                            key={index}
-                            className={`usuario-card ${votos[user] ? "votou" : ""}`}
-                        >
-                            <strong>{user}</strong>
+                        <div key={index} className={`usuario-card ${votos[user.nome] ? "votou" : ""}`}>
+                            <strong>{user.nome}</strong>
                             <span className="status-voto">
-                                {votos[user] ? "✅ Votou" : "❌ Não votou"}
+                                {votos[user.nome] ? "✅ Votou" : "❌ Não votou"}
                             </span>
-
-                            {mostrarVotos && votos[user] && (
+                            {mostrarVotos && votos[user.nome] && (
                                 <span className="voto-valor">
-                                    {typeof votos[user] === "object" ? votos[user].emoji : obterEmoji(votos[user])}
+                                    {typeof votos[user.nome] === "object" ? votos[user.nome].emoji : obterEmoji(votos[user.nome])}
                                 </span>
                             )}
                         </div>
@@ -291,15 +284,13 @@ function Secao() {
                         onClickChange={() => handleClickChange("emoji")}
                         className={botaoSelecionado === "emoji" ? 'secao-botao-clicado' : ''}
                     />
-
                 </div>
             </div>
             <div className="secao-mostrar">
                 <Botao
                     texto="Mostrar Votos"
                     onClickChange={handleMostrarVotos}
-                    disabled={!todosVotaram}
-                    className="mostrar-votos" // Classe adicional
+                    className="mostrar-votos"
                 />
             </div>
         </div>
