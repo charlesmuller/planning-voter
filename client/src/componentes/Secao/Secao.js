@@ -73,6 +73,14 @@ function Secao() {
         }
     };
 
+    // Função para lidar com o fechamento da página
+    const handleBeforeUnload = (usuarioAtual, secaoId) => {
+        return (event) => {
+            // Notifica o servidor que o usuário está saindo
+            socket.emit("sair", { usuario: usuarioAtual, idSecao: secaoId });
+        };
+    };
+
     useEffect(() => {
         const usuarioLogado = localStorage.getItem("usuario");
         setEmojiAleatorio(EMOJIS[Math.floor(Math.random() * EMOJIS.length)]);
@@ -86,6 +94,10 @@ function Secao() {
             setUsuario(usuarioLogado);
             configureSocketEvents(usuarioLogado);
             verificarSecao();
+
+            // Adiciona evento para detectar fechamento da página
+            const handleUnload = handleBeforeUnload(usuarioLogado, idSecao);
+            window.addEventListener('beforeunload', handleUnload);
 
             // Verifica se a seção é válida (exemplo de requisição API)
             const checkSecaoExistente = async () => {
@@ -113,11 +125,19 @@ function Secao() {
 
         // Limpa todos os eventos quando o componente desmontar ou quando idSecao mudar
         return () => {
+            // Remove todos os listeners de eventos
             socket.off("usuariosLogados");
             socket.off("atualizarVotos");
             socket.off("receberVotos");
             socket.off("mostrarVotos");
             socket.off("resetarRodada");
+
+            // Remove o evento de beforeunload
+            const handleUnload = handleBeforeUnload(usuarioLogado, idSecao);
+            window.removeEventListener('beforeunload', handleUnload);
+
+            // Notifica o servidor que o usuário está saindo
+            socket.emit("sair", { usuario: usuarioLogado, idSecao });
         };
     }, [idSecao, navigate]);
 
