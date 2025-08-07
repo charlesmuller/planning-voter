@@ -4,48 +4,130 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:  # Permite execução manual do workflow
+
+env:
+  DOCKER_COMPOSE_VERSION: v2.20.2
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: production
 
     steps:
-      # Checkout do código
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Instalar Docker no runner (caso precise de construção local)
-      - name: Install Docker and Docker Compose
+      - name: Cache Docker layers
+        uses: actions/cache@v3
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Configure Docker and Docker Compose
         run: |
-          # Atualiza a lista de pacotes e instala dependências essenciais
+          # Instala dependências essenciais
           sudo apt-get update
           sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common
 
-          # Adiciona o repositório oficial do Docker
+          # Instala Docker via get.docker.com
           curl -fsSL https://get.docker.com -o get-docker.sh
           sudo sh get-docker.sh
 
-          # Instala Docker Compose
-          sudo curl -L "https://github.com/docker/compose/releases/download/$(curl -s https://api.github.com/repos/docker/compose/releases/latest | jq -r .tag_name)/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          # Instala versão específica do Docker Compose
+          sudo curl -L "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
           sudo chmod +x /usr/local/bin/docker-compose
 
-      # Construir imagens Docker com variáveis de ambiente
-      - name: Build and Push Docker Images
+      - name: Build and Test Docker Images
         run: |
+          # Construir imagens
           docker-compose -f docker-compose.yml build
 
-      # Deploy no VPS (via SSH)
+          # Validar composição do docker-compose
+          docker-compose -f docker-compose.yml config
+
+      - name: Create .env file
+        run: |
+          echo "DB_HOST=${{ secrets.DB_HOST }}" >> .env
+          echo "DB_USER=${{ secrets.DB_USER }}" >> .env
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
+          echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
+          echo "NODE_ENV=production" >> .env
+          echo "API_PORT=4000" >> .env
+          echo "CLIENT_URL=https://planningvoter.kinghost.net" >> .env
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          eval $(ssh-agent -s)
+          ssh-add ~/.ssh/deploy_key
+          
+          # Test SSH connection
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/deploy_key ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_HOST }} echo "SSH connection successful"
+
+      - name: Copy files to VPS
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_PRIVATE_KEY }}
+          source: "., !node_modules, !*/node_modules"
+          target: "/planning-voter"
+          strip_components: 0
+          debug: true
+
       - name: Deploy to VPS
         uses: appleboy/ssh-action@v0.1.4
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_PRIVATE_KEY }}
+          debug: true
           script: |
-            cd /planning-voter/server
-            export DB_HOST=${{ secrets.DB_HOST }}
-            export DB_USER=${{ secrets.DB_USER }}
-            export DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-            export DB_NAME=${{ secrets.DB_NAME }}
-            docker-compose down
-            docker-compose up -d --build
+            # Navega para o diretório do projeto
+            cd /planning-voter
+
+            # Backup dos containers em execução (se necessário)
+            docker-compose -f docker-compose.prod.yml ps > running_containers.txt || true
+
+            # Para os containers atuais
+            docker-compose -f docker-compose.prod.yml down || true
+
+            # Remove imagens antigas
+            docker system prune -f
+
+            # Carrega variáveis de ambiente
+            source .env
+
+            # Constrói e inicia os novos containers
+            docker-compose -f docker-compose.prod.yml up -d --build
+
+            # Verifica o status dos containers
+            docker-compose -f docker-compose.prod.yml ps
+            
+            # Limpa imagens não utilizadas
+            docker image prune -af
+
+      - name: Verify Deployment
+        uses: appleboy/ssh-action@v0.1.4
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_PRIVATE_KEY }}
+          script: |
+            cd /planning-voter
+            # Verifica se os containers estão rodando
+            if ! docker-compose -f docker-compose.prod.yml ps | grep -q "Up"; then
+              echo "Deployment failed - containers are not running"
+              exit 1
+            fi
+            
+            # Tenta fazer uma requisição para o servidor
+            curl -f http://localhost:4000 || exit 1
