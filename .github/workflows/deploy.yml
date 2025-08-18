@@ -146,10 +146,13 @@ jobs:
 
       - name: Verify Deployment
         uses: appleboy/ssh-action@v0.1.4
+        env:
+          HEALTH_CHECK_KEY: ${{ secrets.HEALTH_CHECK_KEY }}
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_PRIVATE_KEY }}
+          envs: HEALTH_CHECK_KEY
           script: |
             cd /planning-voter
 
@@ -168,10 +171,14 @@ jobs:
               exit 1
             fi
 
+            # Mostra as variáveis de ambiente do container (apenas para debug)
+            echo "Verificando variáveis de ambiente do container..."
+            docker-compose -f docker-compose.prod.yml exec -T server env | grep -v PASSWORD
+
             # Espera o servidor estar pronto
             echo "Verificando se o servidor está respondendo..."
             for i in {1..6}; do
-              if curl -f -H "X-Health-Check-Key: ${HEALTH_CHECK_KEY}" http://localhost:4000/api/health; then
+              if curl -v -H "X-Health-Check-Key: $HEALTH_CHECK_KEY" http://localhost:4000/api/health; then
                 echo "Servidor está respondendo!"
                 exit 0
               fi

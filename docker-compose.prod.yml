@@ -33,6 +33,7 @@ services:
       - NODE_OPTIONS=--max-old-space-size=768
       - CLIENT_URL=https://planningvoter.kinghost.net
       - API_PORT=4000
+      - HEALTH_CHECK_KEY=${HEALTH_CHECK_KEY}
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "-H", "X-Health-Check-Key: ${HEALTH_CHECK_KEY}", "http://localhost:4000/api/health"]
