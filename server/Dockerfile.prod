@@ -1,0 +1,21 @@
+FROM node:18-alpine
+WORKDIR /usr/src/app
+
+# Instala apenas dependências de produção
+COPY package*.json ./
+RUN npm ci --only=production
+
+# Copia o resto dos arquivos
+COPY . .
+
+# Configuração do ambiente de produção
+ENV NODE_ENV=production
+ENV NODE_OPTIONS="--max-old-space-size=768"
+
+# Copia arquivo de ambiente de produção
+COPY .env.production .env
+
+EXPOSE 4000
+
+# Executa diretamente com Node.js em produção
+CMD ["node", "server.js"]

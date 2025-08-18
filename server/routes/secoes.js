@@ -33,6 +33,24 @@ router.get('/csrf-token', csrfProtection, (req, res) => {
     res.json({ csrfToken: req.csrfToken() });
 });
 
+// Rota de health check
+router.get('/health', (req, res) => {
+    // Verifica se a requisição vem do localhost
+    const requestIP = req.ip || req.connection.remoteAddress;
+    const isLocalhost = requestIP === '127.0.0.1' || requestIP === '::1' || requestIP.includes('::ffff:127.0.0.1');
+    
+    // Verifica o header de autenticação
+    const authHeader = req.headers['x-health-check-key'];
+    const isValidKey = authHeader === process.env.HEALTH_CHECK_KEY;
+
+    if (!isLocalhost || !isValidKey) {
+        return res.status(403).json({ error: 'Unauthorized' });
+    }
+
+    // Retorna apenas o mínimo necessário
+    res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
 // Criar uma nova seção
 router.post('/criar-secao', csrfProtection, (req, res) => {
     const idSecao = `${Math.random().toString(36).substr(2, 8)}${Math.floor(Math.random() * 100)}`;

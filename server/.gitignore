@@ -26,13 +26,17 @@ out/
 .npm/
 .yarn/
 
-# Variáveis de ambiente e credenciais
+# Environment files
 .env
+.env.development
+.env.production
 .env.local
 .env.*.local
 
-# Arquivos de lock de pacote alternativos
-package-lock.json
+# Allow example files
+!.env.*.example
+
+# Arquivos de lock de pacote
 yarn.lock
 
 # Arquivos de depuração

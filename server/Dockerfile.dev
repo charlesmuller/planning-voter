@@ -1,0 +1,21 @@
+FROM node:18-alpine
+WORKDIR /usr/src/app
+
+# Instala o nodemon globalmente
+RUN npm install -g nodemon
+
+# Instala as dependências primeiro para aproveitar o cache do Docker
+COPY package*.json ./
+RUN npm install
+
+# Copia o resto dos arquivos
+COPY . .
+
+# Configuração do ambiente de desenvolvimento
+ENV NODE_ENV=development
+ENV NODE_OPTIONS="--max-old-space-size=768"
+
+EXPOSE 4000
+
+# Usa nodemon para hot-reload em desenvolvimento
+CMD ["npm", "run", "dev"]

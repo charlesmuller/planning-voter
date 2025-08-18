@@ -51,15 +51,33 @@ jobs:
           # Validar composição do docker-compose
           docker-compose -f docker-compose.yml config
 
-      - name: Create .env file
+      - name: Create environment files
+        env:
+          BASE_URL: https://planningvoter.kinghost.net
+          API_PORT: 80
         run: |
-          echo "DB_HOST=${{ secrets.DB_HOST }}" >> .env
-          echo "DB_USER=${{ secrets.DB_USER }}" >> .env
-          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
-          echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
-          echo "NODE_ENV=production" >> .env
-          echo "API_PORT=4000" >> .env
-          echo "CLIENT_URL=https://planningvoter.kinghost.net" >> .env
+          # Server environment file
+          cp server/.env.production.example server/.env.production
+          # Substituir valores usando envsubst
+          export DB_HOST="${{ secrets.DB_HOST }}"
+          export DB_USER="${{ secrets.DB_USER }}"
+          export DB_PASSWORD="${{ secrets.DB_PASSWORD }}"
+          export DB_NAME="${{ secrets.DB_NAME }}"
+          export CLIENT_URL="$BASE_URL"
+          export API_PORT="$API_PORT"
+          export NODE_ENV="production"
+          export COOKIE_DOMAIN="planningvoter.kinghost.net"
+          export HEALTH_CHECK_KEY="${{ secrets.HEALTH_CHECK_KEY }}"
+          envsubst < server/.env.production.example > server/.env.production
+
+          # Client environment file
+          cp client/.env.production.example client/.env.production
+          # Substituir valores usando envsubst
+          export REACT_APP_API_URL="$BASE_URL/api"
+          export REACT_APP_SOCKET_URL="$BASE_URL"
+          export REACT_APP_URL_LOCAL="$BASE_URL"
+          export NODE_ENV="production"
+          envsubst < client/.env.production.example > client/.env.production
 
       - name: Setup SSH
         run: |
@@ -94,26 +112,35 @@ jobs:
             # Navega para o diretório do projeto
             cd /planning-voter
 
-            # Backup dos containers em execução (se necessário)
-            docker-compose -f docker-compose.prod.yml ps > running_containers.txt || true
+            # Verifica os arquivos .env.production
+            if [ ! -f server/.env.production ]; then
+              echo "Arquivo server/.env.production não encontrado"
+              exit 1
+            fi
+            
+            if [ ! -f client/.env.production ]; then
+              echo "Arquivo client/.env.production não encontrado"
+              exit 1
+            fi
 
             # Para os containers atuais
-            docker-compose -f docker-compose.prod.yml down || true
+            docker-compose -f docker-compose.prod.yml down
 
-            # Remove imagens antigas
-            docker system prune -f
+            # Limpa recursos não utilizados
+            docker system prune -af --volumes
 
-            # Carrega variáveis de ambiente
-            source .env
-
-            # Constrói e inicia os novos containers
+            # Constrói e inicia os novos containers com logs
             docker-compose -f docker-compose.prod.yml up -d --build
 
-            # Verifica o status dos containers
-            docker-compose -f docker-compose.prod.yml ps
-            
-            # Limpa imagens não utilizadas
-            docker image prune -af
+            # Espera 30 segundos para os containers iniciarem
+            echo "Aguardando containers iniciarem..."
+            sleep 30
+
+            # Verifica logs dos containers
+            docker-compose -f docker-compose.prod.yml logs
+
+            # Lista todos os containers
+            docker ps -a
 
       - name: Verify Deployment
         uses: appleboy/ssh-action@v0.1.4
@@ -123,11 +150,32 @@ jobs:
           key: ${{ secrets.VPS_PRIVATE_KEY }}
           script: |
             cd /planning-voter
+
+            # Verifica status dos containers
+            echo "Verificando status dos containers..."
+            docker-compose -f docker-compose.prod.yml ps
+
+            # Verifica logs dos containers
+            echo "Verificando logs dos containers..."
+            docker-compose -f docker-compose.prod.yml logs --tail=50
+
             # Verifica se os containers estão rodando
             if ! docker-compose -f docker-compose.prod.yml ps | grep -q "Up"; then
               echo "Deployment failed - containers are not running"
+              docker-compose -f docker-compose.prod.yml logs
               exit 1
             fi
-            
-            # Tenta fazer uma requisição para o servidor
-            curl -f http://localhost:4000 || exit 1
+
+            # Espera o servidor estar pronto
+            echo "Verificando se o servidor está respondendo..."
+            for i in {1..6}; do
+              if curl -f -H "X-Health-Check-Key: ${HEALTH_CHECK_KEY}" http://localhost:4000/api/health; then
+                echo "Servidor está respondendo!"
+                exit 0
+              fi
+              echo "Tentativa $i - Servidor ainda não está respondendo..."
+              sleep 10
+            done
+
+            echo "Servidor não respondeu após 60 segundos"
+            exit 1

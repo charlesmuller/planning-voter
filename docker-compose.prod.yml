@@ -5,7 +5,10 @@ services:
       dockerfile: Dockerfile.prod
       args:
         NODE_ENV: production
+    env_file:
+      - ./client/.env.production
     environment:
+      - NODE_ENV=production
       - NODE_OPTIONS=--max-old-space-size=768
     volumes:
       - /etc/letsencrypt/live/planningvoter.kinghost.net:/etc/letsencrypt:ro
@@ -14,17 +17,28 @@ services:
     networks:
       - app-network
     ports:
-      - "3000:80"
+      - "80:80"
+    restart: unless-stopped
 
   server:
     build:
       context: ./server
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.prod
     ports:
       - "4000:4000"
+    env_file:
+      - ./server/.env.production
     environment:
-      NODE_ENV: production
-      NODE_OPTIONS: --max-old-space-size=768
+      - NODE_ENV=production
+      - NODE_OPTIONS=--max-old-space-size=768
+      - CLIENT_URL=https://planningvoter.kinghost.net
+      - API_PORT=4000
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "-H", "X-Health-Check-Key: ${HEALTH_CHECK_KEY}", "http://localhost:4000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     networks:
       - app-network
 

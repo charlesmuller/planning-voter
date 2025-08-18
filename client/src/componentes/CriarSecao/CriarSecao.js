@@ -18,13 +18,13 @@ function CriarSecao() {
         }
 
         try {
-            const tokenResponse = await api.get("/api/csrf-token", {
+            const tokenResponse = await api.get("/csrf-token", {
                 withCredentials: true,
             });
 
             const csrfToken = tokenResponse.data.csrfToken;
             const response = await api.post(
-                "/api/criar-secao",
+                "/criar-secao",
                 {},
                 {
                     headers: { "X-CSRF-Token": csrfToken },

@@ -1,0 +1,16 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Instala as dependências primeiro para aproveitar o cache do Docker
+COPY package*.json ./
+RUN npm install
+
+# Copia o resto dos arquivos
+COPY . .
+
+# Expõe a porta usada pelo React em desenvolvimento
+EXPOSE 3001
+
+# Comando para iniciar o servidor de desenvolvimento
+CMD ["npm", "start"]

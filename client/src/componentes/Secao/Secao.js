@@ -64,7 +64,7 @@ function Secao() {
     // Verificação da seção via API
     const verificarSecao = async () => {
         try {
-            const response = await api.get(`/api/secao/${idSecao}`);
+            const response = await api.get(`/secao/${idSecao}`);
             if (!response.data.valida || response.status >= 300) {
                 setTimeout(() => navigate('/criarsecao'), 2000);
             }
@@ -102,7 +102,7 @@ function Secao() {
             // Verifica se a seção é válida (exemplo de requisição API)
             const checkSecaoExistente = async () => {
                 try {
-                    const response = await api.get(`/api/secao/${idSecao}`);
+                    const response = await api.get(`/secao/${idSecao}`);
                     if (response.status >= 200 && response.status < 300) {
                         if (!response.data.valida) {
                             setTimeout(() => navigate('/criarsecao'), 2000);
