@@ -43,14 +43,6 @@ jobs:
           sudo curl -L "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
           sudo chmod +x /usr/local/bin/docker-compose
 
-      - name: Build and Test Docker Images
-        run: |
-          # Construir imagens
-          docker-compose -f docker-compose.prod.yml build
-
-          # Validar composição do docker-compose
-          docker-compose -f docker-compose.prod.yml config
-
       - name: Create environment files
         env:
           BASE_URL: https://planningvoter.kinghost.net
@@ -78,6 +70,16 @@ jobs:
           export REACT_APP_URL_LOCAL="$BASE_URL"
           export NODE_ENV="production"
           envsubst < client/.env.production.example > client/.env.production
+
+      - name: Build and Test Docker Images
+        env:
+          HEALTH_CHECK_KEY: ${{ secrets.HEALTH_CHECK_KEY }}
+        run: |
+          # Construir imagens
+          docker-compose -f docker-compose.prod.yml build
+
+          # Validar composição do docker-compose
+          docker-compose -f docker-compose.prod.yml config
 
       - name: Setup SSH
         run: |
