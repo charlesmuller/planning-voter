@@ -55,34 +55,38 @@ jobs:
         run: |
           # Server environment file
           echo "Criando arquivo .env.production do servidor..."
-          cat > server/.env.production << EOL
-# Configurações do Banco de Dados
-DB_HOST=${DB_HOST}
-DB_USER=${DB_USER}
-DB_PASSWORD=${DB_PASSWORD}
-DB_NAME=${DB_NAME}
-
-# Configurações da Aplicação
-CLIENT_URL=${BASE_URL}
-API_PORT=${API_PORT}
-NODE_ENV=production
-COOKIE_DOMAIN=planningvoter.kinghost.net
-
-# Configuração de Health Check
-HEALTH_CHECK_KEY=${HEALTH_CHECK_KEY}
-EOL
+          {
+            echo "# Configurações do Banco de Dados"
+            echo "DB_HOST=$DB_HOST"
+            echo "DB_USER=$DB_USER"
+            echo "DB_PASSWORD=$DB_PASSWORD"
+            echo "DB_NAME=$DB_NAME"
+            echo ""
+            echo "# Configurações da Aplicação"
+            echo "CLIENT_URL=$BASE_URL"
+            echo "API_PORT=$API_PORT"
+            echo "NODE_ENV=production"
+            echo "COOKIE_DOMAIN=planningvoter.kinghost.net"
+            echo ""
+            echo "# Configuração de Health Check"
+            echo "HEALTH_CHECK_KEY=$HEALTH_CHECK_KEY"
+          } > server/.env.production
 
           # Client environment file
           echo "Criando arquivo .env.production do cliente..."
-          cat > client/.env.production << EOL
-# URLs da API e WebSocket
-REACT_APP_API_URL=${BASE_URL}/api
-REACT_APP_SOCKET_URL=${BASE_URL}
-REACT_APP_URL_LOCAL=${BASE_URL}
+          {
+            echo "# URLs da API e WebSocket"
+            echo "REACT_APP_API_URL=$BASE_URL/api"
+            echo "REACT_APP_SOCKET_URL=$BASE_URL"
+            echo "REACT_APP_URL_LOCAL=$BASE_URL"
+            echo ""
+            echo "# Ambiente"
+            echo "NODE_ENV=production"
+          } > client/.env.production
 
-# Ambiente
-NODE_ENV=production
-EOL
+          # Verificar se os arquivos foram criados
+          echo "Verificando se os arquivos foram criados:"
+          ls -l server/.env.production client/.env.production
 
           # Verificar se os arquivos foram criados corretamente
           echo "Verificando conteúdo dos arquivos (sem senhas)..."
