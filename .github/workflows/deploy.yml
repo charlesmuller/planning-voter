@@ -47,29 +47,49 @@ jobs:
         env:
           BASE_URL: https://planningvoter.kinghost.net
           API_PORT: 80
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          HEALTH_CHECK_KEY: ${{ secrets.HEALTH_CHECK_KEY }}
         run: |
           # Server environment file
-          cp server/.env.production.example server/.env.production
-          # Substituir valores usando envsubst
-          export DB_HOST="${{ secrets.DB_HOST }}"
-          export DB_USER="${{ secrets.DB_USER }}"
-          export DB_PASSWORD="${{ secrets.DB_PASSWORD }}"
-          export DB_NAME="${{ secrets.DB_NAME }}"
-          export CLIENT_URL="$BASE_URL"
-          export API_PORT="$API_PORT"
-          export NODE_ENV="production"
-          export COOKIE_DOMAIN="planningvoter.kinghost.net"
-          export HEALTH_CHECK_KEY="${{ secrets.HEALTH_CHECK_KEY }}"
-          envsubst < server/.env.production.example > server/.env.production
+          echo "Criando arquivo .env.production do servidor..."
+          cat > server/.env.production << EOL
+# Configurações do Banco de Dados
+DB_HOST=${DB_HOST}
+DB_USER=${DB_USER}
+DB_PASSWORD=${DB_PASSWORD}
+DB_NAME=${DB_NAME}
+
+# Configurações da Aplicação
+CLIENT_URL=${BASE_URL}
+API_PORT=${API_PORT}
+NODE_ENV=production
+COOKIE_DOMAIN=planningvoter.kinghost.net
+
+# Configuração de Health Check
+HEALTH_CHECK_KEY=${HEALTH_CHECK_KEY}
+EOL
 
           # Client environment file
-          cp client/.env.production.example client/.env.production
-          # Substituir valores usando envsubst
-          export REACT_APP_API_URL="$BASE_URL/api"
-          export REACT_APP_SOCKET_URL="$BASE_URL"
-          export REACT_APP_URL_LOCAL="$BASE_URL"
-          export NODE_ENV="production"
-          envsubst < client/.env.production.example > client/.env.production
+          echo "Criando arquivo .env.production do cliente..."
+          cat > client/.env.production << EOL
+# URLs da API e WebSocket
+REACT_APP_API_URL=${BASE_URL}/api
+REACT_APP_SOCKET_URL=${BASE_URL}
+REACT_APP_URL_LOCAL=${BASE_URL}
+
+# Ambiente
+NODE_ENV=production
+EOL
+
+          # Verificar se os arquivos foram criados corretamente
+          echo "Verificando conteúdo dos arquivos (sem senhas)..."
+          echo "=== server/.env.production ==="
+          grep -v "PASSWORD\|USER\|HOST" server/.env.production || true
+          echo "=== client/.env.production ==="
+          cat client/.env.production
 
       - name: Build and Test Docker Images
         env:
