@@ -76,8 +76,8 @@ jobs:
           echo "Criando arquivo .env.production do cliente..."
           {
             echo "# URLs da API e WebSocket"
-            echo "REACT_APP_API_URL=$BASE_URL/api"
-            echo "REACT_APP_SOCKET_URL=$BASE_URL"
+            echo "REACT_APP_API_URL=https://api.planningvoter.kinghost.net/api"
+            echo "REACT_APP_SOCKET_URL=https://api.planningvoter.kinghost.net"
             echo "REACT_APP_URL_LOCAL=$BASE_URL"
             echo ""
             echo "# Ambiente"
