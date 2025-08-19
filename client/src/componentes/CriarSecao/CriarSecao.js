@@ -31,7 +31,6 @@ function CriarSecao() {
                     withCredentials: true,
                 }
             );
-
             const idSecao = response.data.idSecao;
             const urlBase = process.env.REACT_APP_URL_LOCAL || "http://localhost:3000";
             const urlCompleta = `${urlBase}/secao/${idSecao}`;
