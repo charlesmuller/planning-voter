@@ -5,8 +5,9 @@ import { useState, useEffect } from "react"
 import { useNavigate, useParams } from "react-router-dom";
 import api from "../../api/api";
 import Icon from '@mdi/react';
-import { mdiLogout, mdiShareVariant, mdiRefresh, mdiWeatherNight, mdiWeatherSunny } from '@mdi/js';
+import { mdiLogout, mdiShareVariant, mdiRefresh, mdiWeatherNight, mdiWeatherSunny, mdiClockOutline } from '@mdi/js';
 import { useTheme } from '../../contexts/ThemeContext';
+import useTimer from '../../hooks/useTimer';
 
 // Constantes
 const FIBONACCI_SEQUENCE = ["1", "2", "3", "5", "8", "13", "21"];
@@ -35,10 +36,12 @@ function Secao() {
     const [emojiAleatorio, setEmojiAleatorio] = useState(null);
     const [tooltip, setTooltip] = useState({ visible: false, x: 0, y: 0 });
 
-    // Hooks de roteamento e tema
+
+    // Hooks de roteamento, tema e cronômetro
     const { idSecao } = useParams();
     const navigate = useNavigate();
     const { isDarkMode, toggleTheme } = useTheme();
+    const { formattedTime, reset: resetTimer } = useTimer();
 
     // Configuração dos eventos do Socket
     const configureSocketEvents = (usuarioLogado) => {
@@ -177,6 +180,7 @@ function Secao() {
         setVotos({});
         setBotaoSelecionado(null);
         setMostrarVotos(false);
+        resetTimer(); // Reinicia o cronômetro
     };
 
     const handleSair = () => {
@@ -215,10 +219,6 @@ function Secao() {
     const MenuSuperior = () => (
         <div className="barra-superior">
             <div className="menu-secao-container">
-                <Icon path={mdiLogout} size={1} onClick={handleSair} className="menu-secao-button" />
-                <span className="menu-secao-text">Sair</span>
-            </div>
-            <div className="menu-secao-container">
                 <Icon path={mdiRefresh} size={1} className="menu-secao-button" onClick={handleNovaRodada} />
                 <span className="menu-secao-text">Reiniciar</span>
             </div>
@@ -237,6 +237,10 @@ function Secao() {
                 <span className="menu-secao-text">
                     {isDarkMode ? "Claro" : "Escuro"}
                 </span>
+            </div>
+            <div className="menu-secao-container">
+                <Icon path={mdiLogout} size={1} onClick={handleSair} className="menu-secao-button" />
+                <span className="menu-secao-text">Sair</span>
             </div>
             {tooltip.visible && (
                 <div className="tooltip" style={{ top: tooltip.y + 10 + "px", left: tooltip.x + 10 + "px" }}>
@@ -285,11 +289,52 @@ function Secao() {
         </div>
     );
 
+    // Componente do Cronômetro
+    const Timer = () => (
+        <div className="timer-container">
+            <Icon path={mdiClockOutline} size={0.8} className="timer-icon" />
+            <span className="timer-text">{formattedTime}</span>
+        </div>
+    );
+
+    // Componente da Legenda de Estimativas (versão compacta)
+    const LegendaEstimativas = () => (
+        <div className="legenda-container">
+            <div className="legenda-titulo">Estimativas com Story Points</div>
+            <div className="legenda-compacta">
+                <span className="legenda-item-compacto">
+                    <strong>1 -</strong> Baixa complexidade sem incertezas e pontual
+                </span>
+                <span className="legenda-item-compacto">
+                    <strong>2 -</strong> Baixa complexidade sem incertezas
+                </span>
+                <span className="legenda-item-compacto">
+                    <strong>3 -</strong> Baixa complexidade com incertezas
+                </span>
+                <span className="legenda-item-compacto">
+                    <strong>5 -</strong> Média complexidade sem incertezas
+                </span>
+                <span className="legenda-item-compacto">
+                    <strong>8 -</strong> Média complexidade com incertezas
+                </span>
+                <span className="legenda-item-compacto">
+                    <strong>13 -</strong> Alta complexidade sem incertezas
+                </span>
+                <span className="legenda-item-compacto">
+                    <strong>21 -</strong> Alta complexidade com incertezas
+                </span>
+            </div>
+        </div>
+    );
+
     return (
         <div className="secao-main">
             <MenuSuperior />
+            <Timer />
             <div className="content-data">
                 <ListaUsuarios />
+            </div>
+            <div className="secao-content">
                 <BotoesVotacao />
             </div>
             <div className="secao-mostrar">
@@ -299,6 +344,7 @@ function Secao() {
                     className="mostrar-votos"
                 />
             </div>
+            <LegendaEstimativas />
         </div>
     )
 }
