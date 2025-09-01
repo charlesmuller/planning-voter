@@ -11,20 +11,20 @@
 }
 
 .nav-menu a {
-    color: black;
+    color: var(--text-color);
     font-weight: bold;
     font-size: 22px;
 }
 
 nav a {
-    color: #fff;
+    color: var(--text-color);
     font-family: Arial, sans-serif;
     font-size: 16px;
     text-decoration: none;
 }
 
 nav a:hover {
-    color: #cccc;
+    color: var(--hover-color);
 }
 
 /* Define o estilo dos itens do menu */
@@ -40,20 +40,29 @@ nav li {
     margin-right: 20px;
     margin-left: 20px;
     line-height: 50px;
-    background-color: #ccff00;
-    color: black;
+    background-color: var(--primary-color);
+    color: var(--nav-text);
     padding: 0px 5px;
-    border: none;
+    border: 2px solid var(--primary-color);
     border-radius: 10px;
     cursor: pointer;
     font-size: 22px;
     font-weight: bold;
     margin: 0 10px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px var(--shadow-color);
+}
+
+nav li:hover {
+    background-color: var(--hover-color);
+    border-color: var(--hover-color);
+    color: var(--text-color);
+    transform: translateY(-2px);
 }
 
 /* Define a cor do item do menu ativo */
 nav li.active a {
-    color: #fff;
+    color: var(--text-color);
 }
 
 .logo-container-menu h1 {
@@ -61,14 +70,14 @@ nav li.active a {
     justify-content: center;
     align-items: center;
     height: 800px;
-    color: aliceblue;
+    color: var(--text-color);
     font-size: 50px;
     margin-top: -20px;
     max-height: 100vh;
 }
 
 .link-ativo {
-    color: #e60f0f;
+    color: var(--primary-color);
 }
 
 @media (max-width: 600px) {

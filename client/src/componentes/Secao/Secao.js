@@ -5,7 +5,8 @@ import { useState, useEffect } from "react"
 import { useNavigate, useParams } from "react-router-dom";
 import api from "../../api/api";
 import Icon from '@mdi/react';
-import { mdiLogout, mdiShareVariant, mdiRefresh } from '@mdi/js';
+import { mdiLogout, mdiShareVariant, mdiRefresh, mdiWeatherNight, mdiWeatherSunny } from '@mdi/js';
+import { useTheme } from '../../contexts/ThemeContext';
 
 // Constantes
 const FIBONACCI_SEQUENCE = ["1", "2", "3", "5", "8", "13", "21"];
@@ -34,9 +35,10 @@ function Secao() {
     const [emojiAleatorio, setEmojiAleatorio] = useState(null);
     const [tooltip, setTooltip] = useState({ visible: false, x: 0, y: 0 });
 
-    // Hooks de roteamento
+    // Hooks de roteamento e tema
     const { idSecao } = useParams();
     const navigate = useNavigate();
+    const { isDarkMode, toggleTheme } = useTheme();
 
     // Configuração dos eventos do Socket
     const configureSocketEvents = (usuarioLogado) => {
@@ -223,6 +225,18 @@ function Secao() {
             <div className="menu-secao-container">
                 <Icon path={mdiShareVariant} size={1} className="menu-secao-button" onClick={handleCopy} />
                 <span className="menu-secao-text">Convide</span>
+            </div>
+            <div className="menu-secao-container">
+                <Icon 
+                    path={isDarkMode ? mdiWeatherSunny : mdiWeatherNight} 
+                    size={1} 
+                    className="menu-secao-button theme-toggle" 
+                    onClick={toggleTheme} 
+                    title={isDarkMode ? "Modo Claro" : "Modo Escuro"}
+                />
+                <span className="menu-secao-text">
+                    {isDarkMode ? "Claro" : "Escuro"}
+                </span>
             </div>
             {tooltip.visible && (
                 <div className="tooltip" style={{ top: tooltip.y + 10 + "px", left: tooltip.x + 10 + "px" }}>
