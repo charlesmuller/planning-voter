@@ -35,13 +35,15 @@ function Secao() {
     const [mostrarVotos, setMostrarVotos] = useState(false);
     const [emojiAleatorio, setEmojiAleatorio] = useState(null);
     const [tooltip, setTooltip] = useState({ visible: false, x: 0, y: 0 });
+    const [timerReset, setTimerReset] = useState(0);
+    const [timerStartTime, setTimerStartTime] = useState(null);
 
 
     // Hooks de roteamento, tema e cronômetro
     const { idSecao } = useParams();
     const navigate = useNavigate();
     const { isDarkMode, toggleTheme } = useTheme();
-    const { formattedTime, reset: resetTimer } = useTimer();
+    const { formattedTime, reset: resetTimer } = useTimer(timerReset, timerStartTime);
 
     // Configuração dos eventos do Socket
     const configureSocketEvents = (usuarioLogado) => {
@@ -63,6 +65,19 @@ function Secao() {
         socket.on("resetarRodada", () => {
             setBotaoSelecionado(null);
             setMostrarVotos(false);
+        });
+
+        socket.on("novaRodada", () => {
+            // Reseta o timer para todos os usuários
+            setTimerReset(prev => prev + 1);
+            setBotaoSelecionado(null);
+            setMostrarVotos(false);
+            setVotos({});
+        });
+
+        socket.on("sincronizarTimer", ({ tempoInicio }) => {
+            // Sincroniza o timer com o tempo inicial do servidor
+            setTimerStartTime(tempoInicio);
         });
     };
 
@@ -177,10 +192,7 @@ function Secao() {
     const handleNovaRodada = () => {
         socket.emit("novaRodada", { idSecao, votos });
         setEmojiAleatorio(EMOJIS[Math.floor(Math.random() * EMOJIS.length)]);
-        setVotos({});
-        setBotaoSelecionado(null);
-        setMostrarVotos(false);
-        resetTimer(); // Reinicia o cronômetro
+        // Os resets serão feitos via socket para sincronizar todos os usuários
     };
 
     const handleSair = () => {

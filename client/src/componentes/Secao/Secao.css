@@ -2,10 +2,11 @@
     display: flex;
     align-items: center;
     flex-direction: column;
-    min-height: 100vh;
-    justify-content: flex-start;
-    gap: 20px;
-    padding: 20px 0;
+    min-height: 100vh; /* Usa no mínimo a altura da viewport */
+    justify-content: flex-start; /* Conteúdo no topo */
+    gap: 45px; /* Espaçamento maior entre componentes */
+    padding: 20px 0; /* Padding no topo e embaixo */
+    box-sizing: border-box; /* Inclui padding no cálculo da altura */
 }
 
 .secao-content {
@@ -14,7 +15,7 @@
     gap: 10px;
     justify-content: center;
     align-items: center;
-    padding: 15px 20px;
+    padding: 8px 20px; /* Meio termo: 8px */
     width: 100%;
     max-width: 1200px;
 }
@@ -42,7 +43,7 @@
     gap: 15px;
     justify-content: center;
     align-items: center;
-    padding: 15px 20px;
+    padding: 8px 20px; /* Meio termo: 8px */
     max-width: 100%;
     margin: 0 auto;
 }
@@ -473,7 +474,8 @@
     width: 100%;
     max-width: 1200px;
     margin: 0 auto;
-    padding: 15px 20px;
+    padding: 8px 20px; /* Meio termo: 8px */
+    /* Removido flex: 1 para permitir que o conteúdo se ajuste naturalmente */
 }
 
 /* Remove a regra duplicada - já existe no topo do arquivo */
@@ -603,7 +605,7 @@
     width: 100%;
     max-width: 1200px;
     margin: 0 auto;
-    padding: 12px 16px;
+    padding: 8px 16px; /* Reduzido de 12px para 8px */
     background-color: var(--card-background);
     border-radius: 8px;
     box-shadow: 0 2px 4px var(--shadow-color);

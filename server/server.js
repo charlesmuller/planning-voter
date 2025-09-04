@@ -95,7 +95,11 @@ configureExpressMiddleware();
 const secaoHelpers = {
     criarSecao: (idSecao) => {
         if (!secoes[idSecao]) {
-            secoes[idSecao] = { usuarios: [], votos: {} };
+            secoes[idSecao] = { 
+                usuarios: [], 
+                votos: {},
+                tempoInicio: Date.now() // Armazena quando a seção foi criada
+            };
         }
         return secoes[idSecao];
     },
@@ -126,6 +130,12 @@ const secaoHelpers = {
         if (secoes[idSecao]) {
             secoes[idSecao].votos = {};
         }
+    },
+
+    resetarTimer: (idSecao) => {
+        if (secoes[idSecao]) {
+            secoes[idSecao].tempoInicio = Date.now();
+        }
     }
 };
 
@@ -142,6 +152,9 @@ io.on('connection', (socket) => {
         socket.join(idSecao);
         io.to(idSecao).emit('usuariosLogados', secoes[idSecao].usuarios);
         socket.emit("atualizarVotos", secoes[idSecao].votos);
+        
+        // Envia o tempo inicial da seção para sincronizar o timer
+        socket.emit("sincronizarTimer", { tempoInicio: secoes[idSecao].tempoInicio });
     });
 
     // Evento de voto
@@ -175,8 +188,14 @@ io.on('connection', (socket) => {
     socket.on("novaRodada", ({ idSecao }) => {
         if (secoes[idSecao]) {
             secaoHelpers.limparVotos(idSecao);
+            secaoHelpers.resetarTimer(idSecao); // Reseta o timer no servidor
+            
             io.to(idSecao).emit("resetarRodada");
+            io.to(idSecao).emit("novaRodada"); // Propaga o evento para todos os clientes
             io.to(idSecao).emit("receberVotos", secoes[idSecao].votos);
+            
+            // Envia o novo tempo inicial para todos os usuários
+            io.to(idSecao).emit("sincronizarTimer", { tempoInicio: secoes[idSecao].tempoInicio });
         }
     });
 
