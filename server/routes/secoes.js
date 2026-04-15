@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../base');
+const axios = require('axios');
 const urlLocal = process.env.CLIENT_URL || 'http://localhost:3000';
 const cookieParser = require('cookie-parser');
 const csrf = require('csurf');
@@ -51,21 +52,73 @@ router.get('/health', (req, res) => {
     res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Criar uma nova seção
-router.post('/criar-secao', csrfProtection, (req, res) => {
-    const idSecao = `${Math.random().toString(36).substr(2, 8)}${Math.floor(Math.random() * 100)}`;
-    const uniqueLink = `${urlLocal}/secao/${idSecao}`;
-    const nome = idSecao;
-    const query = 'INSERT INTO secoes (nome, unique_link) VALUES (?, ?)';
+// Criar uma nova seção com validação de reCAPTCHA
+router.post('/criar-secao', csrfProtection, async (req, res) => {
+    const { recaptchaToken, usuario } = req.body;
 
-    db.query(query, [nome, uniqueLink], (error, results) => {
-        if (error) {
-            console.error('Erro ao criar seção:', error);
-            return res.status(500).json({ error: 'Erro ao criar seção' });
+    // Validação do reCAPTCHA
+    if (!recaptchaToken) {
+        return res.status(400).json({ error: 'reCAPTCHA token ausente' });
+    }
+
+    // Validação do username
+    if (!usuario || typeof usuario !== 'string') {
+        return res.status(400).json({ error: 'Nome de usuário inválido' });
+    }
+
+    const usuarioTrimmed = usuario.trim();
+    if (usuarioTrimmed.length < 3 || usuarioTrimmed.length > 100) {
+        return res.status(400).json({ error: 'Nome de usuário deve ter entre 3 e 100 caracteres' });
+    }
+
+    try {
+        // Verificar o token do reCAPTCHA com a API do Google
+        const recaptchaResponse = await axios.post(
+            'https://www.google.com/recaptcha/api/siteverify',
+            null,
+            {
+                params: {
+                    secret: process.env.RECAPTCHA_SECRET_KEY,
+                    response: recaptchaToken,
+                }
+            }
+        );
+
+        const { success, score } = recaptchaResponse.data;
+
+        // Para reCAPTCHA v3, você pode verificar o score (0.0 - 1.0)
+        // Para reCAPTCHA v2, success é suficiente
+        if (!success || (score && score < 0.5)) {
+            console.warn('reCAPTCHA validation failed:', { success, score });
+            return res.status(403).json({ error: 'Validação de reCAPTCHA falhou' });
         }
-        res.header("Content-Type", "application/json");
-        res.json({ idSecao, url: uniqueLink });
-    });
+
+        // Gerar ID da seção
+        const idSecao = `${Math.random().toString(36).substr(2, 8)}${Math.floor(Math.random() * 100)}`;
+        const uniqueLink = `${urlLocal}/secao/${idSecao}`;
+        const nome = idSecao;
+
+        // Inserir no banco de dados
+        const query = 'INSERT INTO secoes (nome, unique_link) VALUES (?, ?)';
+        db.query(query, [nome, uniqueLink], (error, results) => {
+            if (error) {
+                console.error('Erro ao criar seção:', error);
+                return res.status(500).json({ error: 'Erro ao criar seção' });
+            }
+            res.header("Content-Type", "application/json");
+            res.json({ idSecao, url: uniqueLink });
+        });
+
+    } catch (error) {
+        console.error('Erro ao verificar reCAPTCHA:', error.message);
+        
+        // Se houver erro na verificação, rejeitamos por segurança
+        if (error.response?.status === 400) {
+            return res.status(400).json({ error: 'Erro na validação de reCAPTCHA' });
+        }
+        
+        return res.status(500).json({ error: 'Erro ao processar requisição' });
+    }
 });
 
 router.get('/secao/:idSecao', (req, res) => {
