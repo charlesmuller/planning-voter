@@ -18,6 +18,33 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Update package lock files
+        run: |
+          echo "Verificando e atualizando package-lock.json..."
+          
+          # Atualizar server package-lock.json
+          if [ -f "server/package.json" ]; then
+            echo "Atualizando server/package-lock.json..."
+            cd server
+            npm install --package-lock-only
+            cd ..
+          fi
+          
+          # Atualizar client package-lock.json
+          if [ -f "client/package.json" ]; then
+            echo "Atualizando client/package-lock.json..."
+            cd client
+            npm install --package-lock-only
+            cd ..
+          fi
+          
+          echo "Package lock files atualizados!"
+
       - name: Cache Docker layers
         uses: actions/cache@v3
         with:
