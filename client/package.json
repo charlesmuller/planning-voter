@@ -16,7 +16,8 @@
     "react-scripts": "5.0.1",
     "socket.io-client": "^4.8.1",
     "web-vitals": "^2.1.4",
-    "@babel/plugin-proposal-private-property-in-object": "^7.21.0"
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.0",
+    "react-google-recaptcha": "^3.0.0"
   },
   "scripts": {
     "start": "react-scripts start",

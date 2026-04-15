@@ -52,6 +52,8 @@ jobs:
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           DB_NAME: ${{ secrets.DB_NAME }}
           HEALTH_CHECK_KEY: ${{ secrets.HEALTH_CHECK_KEY }}
+          RECAPTCHA_SECRET_KEY: ${{ secrets.RECAPTCHA_SECRET_KEY }}
+          RECAPTCHA_SITE_KEY: ${{ secrets.RECAPTCHA_SITE_KEY }}
         run: |
           # Server environment file
           echo "Criando arquivo .env.production do servidor..."
@@ -70,6 +72,9 @@ jobs:
             echo ""
             echo "# Configuração de Health Check"
             echo "HEALTH_CHECK_KEY=$HEALTH_CHECK_KEY"
+            echo ""
+            echo "# Google reCAPTCHA"
+            echo "RECAPTCHA_SECRET_KEY=$RECAPTCHA_SECRET_KEY"
           } > server/.env.production
 
           # Client environment file
@@ -82,6 +87,9 @@ jobs:
             echo ""
             echo "# Ambiente"
             echo "NODE_ENV=production"
+            echo ""
+            echo "# Google reCAPTCHA"
+            echo "REACT_APP_RECAPTCHA_SITE_KEY=$RECAPTCHA_SITE_KEY"
           } > client/.env.production
 
           # Verificar se os arquivos foram criados
@@ -91,7 +99,7 @@ jobs:
           # Verificar se os arquivos foram criados corretamente
           echo "Verificando conteúdo dos arquivos (sem senhas)..."
           echo "=== server/.env.production ==="
-          grep -v "PASSWORD\|USER\|HOST" server/.env.production || true
+          grep -v "PASSWORD\|USER\|HOST\|SECRET" server/.env.production || true
           echo "=== client/.env.production ==="
           cat client/.env.production
 
