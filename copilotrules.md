@@ -107,13 +107,28 @@ planning-voter/
 - Docker: [https://docs.docker.com/](https://docs.docker.com/)
 - MySQL: [https://dev.mysql.com/doc/](https://dev.mysql.com/doc/)
 
+## Política de Documentação
+
+### Criação de Arquivos .md
+- **Não criar automaticamente** arquivos .md para cada alteração
+- **Criar documentação apenas quando:**
+  - Explicitamente solicitado pelo usuário
+  - A documentação é essencial para compreender uma feature complexa
+  - É um padrão existente no projeto (ex: setup guides)
+- **Preferir atualizar documentação existente** em vez de criar novos arquivos
+- **Manter foco na implementação do código**, não em documentação complementar
+
+### Alterações e Código
+- Comentários inline no código têm prioridade sobre arquivos de documentação
+- README.md é o ponto central para documentação do projeto
+- Guias específicos devem estar no projeto, não em arquivos adicionais
+
 ## Observações Importantes
 
 1. Toda alteração deve seguir estas regras
 2. Em caso de dúvida, consultar a documentação oficial
 3. Manter este documento atualizado
-4. Documentar decisões importantes
-5. Priorizar segurança e performance
+4. Priorizar segurança e performance
 
 ## Fluxo de Trabalho com GitHub Copilot
 
