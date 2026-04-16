@@ -121,6 +121,73 @@ router.post('/criar-secao', csrfProtection, async (req, res) => {
     }
 });
 
+// Rota de login com validação de reCAPTCHA
+router.post('/login', async (req, res) => {
+    const { recaptchaToken, usuario, idSecao } = req.body;
+
+    // Validações básicas
+    if (!usuario || typeof usuario !== 'string') {
+        return res.status(400).json({ error: 'Usuário inválido' });
+    }
+
+    if (!idSecao || typeof idSecao !== 'string') {
+        return res.status(400).json({ error: 'Seção inválida' });
+    }
+
+    const usuarioTrimmed = usuario.trim();
+    if (usuarioTrimmed.length < 3 || usuarioTrimmed.length > 100) {
+        return res.status(400).json({ error: 'Usuário deve ter entre 3 e 100 caracteres' });
+    }
+
+    try {
+        // Validar reCAPTCHA se a chave estiver configurada
+        if (process.env.RECAPTCHA_SECRET_KEY && recaptchaToken) {
+            const recaptchaResponse = await axios.post(
+                'https://www.google.com/recaptcha/api/siteverify',
+                null,
+                {
+                    params: {
+                        secret: process.env.RECAPTCHA_SECRET_KEY,
+                        response: recaptchaToken,
+                    }
+                }
+            );
+
+            const { success, score } = recaptchaResponse.data;
+
+            if (!success || (score && score < 0.5)) {
+                console.warn('reCAPTCHA validation failed for login:', { success, score });
+                return res.status(403).json({ error: 'Validação de reCAPTCHA falhou' });
+            }
+        } else if (process.env.RECAPTCHA_SECRET_KEY && !recaptchaToken) {
+            // Se a chave existe mas não recebeu token, rejeita
+            return res.status(400).json({ error: 'Token reCAPTCHA ausente' });
+        }
+
+        // Verificar se a seção existe
+        db.query('SELECT * FROM secoes WHERE nome = ?', [idSecao], (error, results) => {
+            if (error) {
+                console.error('Erro no banco:', error);
+                return res.status(500).json({ error: 'Erro no servidor' });
+            }
+            if (results.length === 0) {
+                return res.status(404).json({ error: 'Seção não encontrada' });
+            }
+            // Login bem-sucedido
+            res.status(200).json({ success: true, message: 'Login realizado com sucesso' });
+        });
+
+    } catch (error) {
+        console.error('Erro ao fazer login:', error.message);
+        
+        if (error.response?.status === 400) {
+            return res.status(400).json({ error: 'Erro na validação de reCAPTCHA' });
+        }
+        
+        return res.status(500).json({ error: 'Erro ao processar login' });
+    }
+});
+
 router.get('/secao/:idSecao', (req, res) => {
     const { idSecao } = req.params;
 
