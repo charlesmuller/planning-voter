@@ -1,13 +1,19 @@
 import "./Login.css";
-import Menu from "../Menu/Menu";
 import Botao from "../Botao/Botao";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import ReCAPTCHA from "react-google-recaptcha";
+import { useTheme } from "../../contexts/ThemeContext";
+import api from "../../api/api";
 
 function Login() {
     const [usuario, setUsuario] = useState("");
+    const [errorMessage, setErrorMessage] = useState("");
+    const [loading, setLoading] = useState(false);
+    const recaptchaRef = useRef(null);
     const navigate = useNavigate();
     const location = useLocation();
+    const { isDarkMode } = useTheme();
     const idSecaoFromState = location.state?.idSecao;
     const idSecaoFromQuery = new URLSearchParams(location.search).get("idSecao");
     const idSecao = idSecaoFromState || idSecaoFromQuery;
@@ -15,22 +21,85 @@ function Login() {
     useEffect(() => {
     }, [location, navigate]);
 
-    const handleLogin = (e) => {
+    const handleLogin = async (e) => {
         e.preventDefault();
-        if (usuario) {
-            localStorage.setItem("usuario", usuario);
-            navigate(`/secao/${idSecao}`, { state: { usuario } });
-        } else {
-            alert("Por favor, digite um usuário.");
+        setErrorMessage("");
+
+        // Validação do usuário
+        if (!usuario.trim()) {
+            setErrorMessage("Por favor, digite seu usuário.");
+            return;
+        }
+
+        if (usuario.length < 3) {
+            setErrorMessage("O usuário deve ter no mínimo 3 caracteres.");
+            return;
+        }
+
+        // Validação do reCAPTCHA
+        const recaptchaToken = recaptchaRef?.current?.getValue();
+        const isDev = process.env.NODE_ENV === 'development';
+        const siteKeyDefined = process.env.REACT_APP_RECAPTCHA_SITE_KEY;
+
+        if (siteKeyDefined && !recaptchaToken) {
+            setErrorMessage("Por favor, confirme que você não é um robô.");
+            return;
+        }
+
+        // Validação se tem idSecao
+        if (!idSecao) {
+            setErrorMessage("ID da seção inválido.");
+            return;
+        }
+
+        setLoading(true);
+
+        try {
+            // Validar login com reCAPTCHA no backend
+            const response = await api.post(
+                "/login",
+                { recaptchaToken, usuario, idSecao },
+                { withCredentials: true }
+            );
+
+            if (response.status === 200) {
+                localStorage.setItem("usuario", usuario);
+                navigate(`/secao/${idSecao}`, { state: { usuario } });
+            }
+        } catch (error) {
+            console.error("Erro ao fazer login:", error);
+
+            if (error.response?.status === 400) {
+                setErrorMessage(error.response.data.error || "Validação falhou. Tente novamente.");
+            } else if (error.response?.status === 403) {
+                setErrorMessage("Acesso negado. Tente novamente mais tarde.");
+            } else if (error.response?.status === 404) {
+                setErrorMessage("Seção não encontrada.");
+            } else {
+                setErrorMessage("Erro ao fazer login. Tente novamente mais tarde.");
+            }
+
+            // Resetar reCAPTCHA em caso de erro
+            if (recaptchaRef?.current) {
+                recaptchaRef.current.reset();
+            }
+        } finally {
+            setLoading(false);
         }
     };
 
     return (
         <div className="login-container">
-            <Menu />
             <div className="usuario-container">
                 <form onSubmit={handleLogin}>
                     <h1>Acessar Seção de Planning</h1>
+
+                    {errorMessage && (
+                        <div style={{ color: '#ff6b6b', marginBottom: '1rem', padding: '0.75rem', backgroundColor: 'rgba(255, 107, 107, 0.1)', borderRadius: '4px' }}>
+                            {errorMessage}
+                        </div>
+                    )}
+
                     <div className="input-container">
                         <label>Digite seu usuário</label>
                         <input
@@ -39,9 +108,30 @@ function Login() {
                             name="text"
                             value={usuario}
                             onChange={(e) => setUsuario(e.target.value)}
+                            disabled={loading}
+                            minLength="3"
+                            placeholder="Mínimo 3 caracteres"
                         />
                     </div>
-                    <Botao type="submit" texto="Entrar" />
+
+                    {/* reCAPTCHA widget */}
+                    {process.env.REACT_APP_RECAPTCHA_SITE_KEY ? (
+                        <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'center' }}>
+                            <ReCAPTCHA
+                                ref={recaptchaRef}
+                                sitekey={process.env.REACT_APP_RECAPTCHA_SITE_KEY}
+                                theme={isDarkMode ? "dark" : "light"}
+                                onChange={() => setErrorMessage("")}
+                            />
+                        </div>
+                    ) : null}
+
+                    <Botao 
+                        type="submit" 
+                        texto={loading ? "Entrando..." : "Entrar"}
+                        disabled={loading}
+                        style={{ opacity: loading ? 0.6 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}
+                    />
                 </form>
             </div>
         </div>
