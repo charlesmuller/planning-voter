@@ -190,6 +190,11 @@ jobs:
             # Limpa recursos não utilizados
             docker system prune -af --volumes
 
+            # Garante que a pasta de logs exista com dono correto (UID 1000 = usuário 'node' dentro do container)
+            mkdir -p server/storage/logs
+            chown -R 1000:1000 server/storage
+            chmod -R 775 server/storage
+
             # Constrói e inicia os novos containers com logs
             docker-compose -f docker-compose.prod.yml up -d --build
 
