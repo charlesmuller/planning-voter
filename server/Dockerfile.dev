@@ -11,6 +11,9 @@ RUN npm install
 # Copia o resto dos arquivos
 COPY . .
 
+# Garante que a pasta de logs exista
+RUN mkdir -p /usr/src/app/storage/logs
+
 # Configuração do ambiente de desenvolvimento
 ENV NODE_ENV=development
 ENV NODE_OPTIONS="--max-old-space-size=768"
