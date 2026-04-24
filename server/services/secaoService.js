@@ -5,40 +5,42 @@ const MESSAGES = require('../constants/messages');
 const urlLocal = process.env.CLIENT_URL || 'http://localhost:3000';
 
 /**
- * Generates a unique section ID
- * @returns {string} Unique section ID
+ * Gera um ID único para a seção
+ * @returns {string} ID da seção
  */
 const generateSecaoId = () => {
   return `${Math.random().toString(36).substr(2, 8)}${Math.floor(Math.random() * 100)}`;
 };
 
 /**
- * Creates a new section with reCAPTCHA validation
- * @param {Object} data - Section creation data
- * @param {string} data.usuario - Username
- * @param {string} data.recaptchaToken - reCAPTCHA token
+ * Cria uma nova seção com validação reCAPTCHA
+ * @param {Object} data - Dados de criação da seção
+ * @param {string} data.usuario - Nome do usuário
+ * @param {string} data.recaptchaToken - Token do reCAPTCHA
  * @returns {Promise<Object>} { success: boolean, idSecao?: string, url?: string, error?: string }
  */
 const criarSecao = async (data) => {
   const { usuario, recaptchaToken } = data;
 
   try {
-    // Verify reCAPTCHA token
-    const recaptchaResult = await recaptchaService.verifyRecaptchaToken(recaptchaToken);
-    if (!recaptchaResult.success) {
-      return {
-        success: false,
-        error: recaptchaResult.error,
-        statusCode: 403,
-      };
+    // Verificar token reCAPTCHA somente se estiver configurado
+    if (process.env.RECAPTCHA_SECRET_KEY) {
+      const recaptchaResult = await recaptchaService.verifyRecaptchaToken(recaptchaToken);
+      if (!recaptchaResult.success) {
+        return {
+          success: false,
+          error: recaptchaResult.error,
+          statusCode: 403,
+        };
+      }
     }
 
-    // Generate section ID and unique link
+    // Gerar ID da seção e link único
     const idSecao = generateSecaoId();
     const uniqueLink = `${urlLocal}/secao/${idSecao}`;
     const nome = idSecao;
 
-    // Save to database
+    // Salvar no repositório
     await secaoRepository.createSecao({ nome, uniqueLink });
 
     return {
@@ -57,18 +59,18 @@ const criarSecao = async (data) => {
 };
 
 /**
- * Validates user login to a section with reCAPTCHA validation
- * @param {Object} data - Login data
- * @param {string} data.usuario - Username
- * @param {string} data.idSecao - Section ID
- * @param {string} data.recaptchaToken - reCAPTCHA token
+ * Valida o login de um usuário em uma seção com validação reCAPTCHA
+ * @param {Object} data - Dados de login
+ * @param {string} data.usuario - Nome do usuário
+ * @param {string} data.idSecao - ID da seção
+ * @param {string} data.recaptchaToken - Token do reCAPTCHA
  * @returns {Promise<Object>} { success: boolean, message?: string, error?: string, statusCode?: number }
  */
 const loginSecao = async (data) => {
   const { usuario, idSecao, recaptchaToken } = data;
 
   try {
-    // Verify reCAPTCHA token if configured
+    // Verificar token reCAPTCHA se estiver configurado
     if (process.env.RECAPTCHA_SECRET_KEY && recaptchaToken) {
       const recaptchaResult = await recaptchaService.verifyRecaptchaToken(recaptchaToken);
       if (!recaptchaResult.success) {
@@ -80,7 +82,7 @@ const loginSecao = async (data) => {
       }
     }
 
-    // Check if section exists
+    // Verificar se a seção existe
     const secaoExists = await secaoRepository.secaoExists(idSecao);
     if (!secaoExists) {
       return {

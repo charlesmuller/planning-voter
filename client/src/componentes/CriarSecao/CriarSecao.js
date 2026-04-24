@@ -8,6 +8,7 @@ import api from "../../api/api";
 
 function CriarSecao() {
     const [usuario, setUsuario] = useState("");
+    const [tipo, setTipo] = useState("votante"); // Novo: perfil ao criar seção
     const [urlSecao, setUrlSecao] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
     const [loading, setLoading] = useState(false);
@@ -55,7 +56,7 @@ function CriarSecao() {
             // Criar seção com validação de reCAPTCHA
             const response = await api.post(
                 "/criar-secao",
-                { recaptchaToken, usuario },
+                { recaptchaToken, usuario, tipo },
                 {
                     headers: { "X-CSRF-Token": csrfToken },
                     withCredentials: true,
@@ -68,9 +69,10 @@ function CriarSecao() {
 
             setUrlSecao(urlCompleta);
             localStorage.setItem("usuario", usuario);
+            localStorage.setItem("tipo", tipo); // Salva perfil criado
             
             // Redirecionar instantaneamente
-            navigate(`/secao/${idSecao}`, { state: { usuario } });
+            navigate(`/secao/${idSecao}`, { state: { usuario, tipo } });
 
         } catch (error) {
             console.error("Erro ao gerar seção:", error);
@@ -115,6 +117,35 @@ function CriarSecao() {
                             minLength="3"
                             placeholder="Mínimo 3 caracteres"
                         />
+                    </div>
+
+                    {/* Seleção de tipo de perfil */}
+                    <div className="input-container" style={{ marginBottom: '1.5rem' }}>
+                        <label>Escolha seu perfil</label>
+                        <div style={{ display: 'flex', gap: '2rem', marginTop: '0.5rem' }}>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                                <input
+                                    type="radio"
+                                    name="tipo"
+                                    value="votante"
+                                    checked={tipo === "votante"}
+                                    onChange={() => setTipo("votante")}
+                                    disabled={loading}
+                                />
+                                <span>👤 Votante</span>
+                            </label>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                                <input
+                                    type="radio"
+                                    name="tipo"
+                                    value="observador"
+                                    checked={tipo === "observador"}
+                                    onChange={() => setTipo("observador")}
+                                    disabled={loading}
+                                />
+                                <span>👁️ Observador (sem votação)</span>
+                            </label>
+                        </div>
                     </div>
 
                     {/* reCAPTCHA widget */}

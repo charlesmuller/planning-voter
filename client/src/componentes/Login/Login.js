@@ -8,6 +8,7 @@ import api from "../../api/api";
 
 function Login() {
     const [usuario, setUsuario] = useState("");
+    const [tipo, setTipo] = useState("votante"); // Novo: busca o tipo do usuário (votante ou observador)
     const [errorMessage, setErrorMessage] = useState("");
     const [loading, setLoading] = useState(false);
     const recaptchaRef = useRef(null);
@@ -64,7 +65,8 @@ function Login() {
 
             if (response.status === 200) {
                 localStorage.setItem("usuario", usuario);
-                navigate(`/secao/${idSecao}`, { state: { usuario } });
+                localStorage.setItem("tipo", tipo); // Novo: Salvar tipo de perfil do usuário
+                navigate(`/secao/${idSecao}`, { state: { usuario, tipo } });
             }
         } catch (error) {
             console.error("Erro ao fazer login:", error);
@@ -112,6 +114,37 @@ function Login() {
                             minLength="3"
                             placeholder="Mínimo 3 caracteres"
                         />
+                    </div>
+
+                    {/* Tipo de perfil */}
+                    <div className="input-container" style={{ marginBottom: '1.5rem' }}>
+                        <label>Escolha seu perfil</label>
+                        <div style={{ display: 'flex', gap: '2rem', marginTop: '0.5rem' }}>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                                <input
+                                    type="radio"
+                                    name="tipo"
+                                    value="votante"
+                                    checked={tipo === "votante"}
+                                    onChange={() => setTipo("votante")}
+                                    disabled={loading}
+                                    style={{ cursor: loading ? 'not-allowed' : 'pointer' }}
+                                />
+                                <span>👤 Votante</span>
+                            </label>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                                <input
+                                    type="radio"
+                                    name="tipo"
+                                    value="observador"
+                                    checked={tipo === "observador"}
+                                    onChange={() => setTipo("observador")}
+                                    disabled={loading}
+                                    style={{ cursor: loading ? 'not-allowed' : 'pointer' }}
+                                />
+                                <span>👁️ Observador (sem votação)</span>
+                            </label>
+                        </div>
                     </div>
 
                     {/* reCAPTCHA widget */}
