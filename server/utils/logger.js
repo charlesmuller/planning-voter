@@ -23,9 +23,20 @@ class Logger {
             console.error('Falha ao criar diretório de logs:', err);
         }
 
+        this.fileWriteDisabled = false;
+
         this.limparLogsAntigos();
         this.retencaoTimer = setInterval(() => this.limparLogsAntigos(), ONE_DAY_MS);
         if (this.retencaoTimer.unref) this.retencaoTimer.unref();
+    }
+
+    disableFileWrite(err) {
+        if (this.fileWriteDisabled) return;
+        this.fileWriteDisabled = true;
+        console.error(
+            `[logger] Escrita em arquivo desabilitada (${err.code || err.message}). ` +
+            `Logs continuarão saindo no stdout. Verifique permissões em ${this.logDir}.`
+        );
     }
 
     limparLogsAntigos() {
@@ -83,17 +94,24 @@ class Logger {
         const contextStr = hasContext ? ` ${JSON.stringify(context)}` : '';
         const line = `[${ts.full}] ${level.toUpperCase()}: ${message}${contextStr}\n`;
 
-        try {
-            fs.appendFile(this.getLogFilePath(ts.date), line, (err) => {
-                if (err) console.error('Erro ao gravar log:', err);
-            });
-        } catch (err) {
-            console.error('Erro ao gravar log:', err);
-        }
-
         if (this.alsoConsole) {
             const out = level === 'error' ? process.stderr : process.stdout;
             out.write(line);
+        }
+
+        if (this.fileWriteDisabled) return;
+
+        try {
+            fs.appendFile(this.getLogFilePath(ts.date), line, (err) => {
+                if (!err) return;
+                if (['EACCES', 'EPERM', 'EROFS', 'ENOENT'].includes(err.code)) {
+                    this.disableFileWrite(err);
+                } else {
+                    console.error('Erro ao gravar log:', err);
+                }
+            });
+        } catch (err) {
+            this.disableFileWrite(err);
         }
     }
 
