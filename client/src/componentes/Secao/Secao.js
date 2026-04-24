@@ -31,6 +31,7 @@ function Secao() {
     const [botaoSelecionado, setBotaoSelecionado] = useState(null);
     const [votos, setVotos] = useState({});
     const [usuario, setUsuario] = useState("");
+    const [tipo, setTipo] = useState("votante"); // Novo: Busca o tipo do usuário (votante ou observador)
     const [usuarios, setUsuarios] = useState([]);
     const [mostrarVotos, setMostrarVotos] = useState(false);
     const [emojiAleatorio, setEmojiAleatorio] = useState(null);
@@ -46,11 +47,18 @@ function Secao() {
     const { formattedTime, reset: resetTimer } = useTimer(timerReset, timerStartTime);
 
     // Configuração dos eventos do Socket
-    const configureSocketEvents = (usuarioLogado) => {
-        socket.emit('usuarioLogado', { usuario: usuarioLogado, idSecao });
+    const configureSocketEvents = (usuarioLogado, tipoLogado) => {
+        socket.emit('usuarioLogado', { usuario: usuarioLogado, idSecao, tipo: tipoLogado });
 
         socket.on("usuariosLogados", (usuariosLogados) => {
-            setUsuarios([...new Set(usuariosLogados)]);
+            // Novo: Tratar ambos os formatos (array de strings e array de objetos) e convertê-los para o formato de objeto esperado
+            const usuariosFormatados = usuariosLogados.map(u => {
+                if (typeof u === 'string') {
+                    return { nome: u, tipo: 'votante' };
+                }
+                return u;
+            });
+            setUsuarios(usuariosFormatados);
         });
 
         socket.on("atualizarVotos", setVotos);
@@ -103,6 +111,7 @@ function Secao() {
 
     useEffect(() => {
         const usuarioLogado = localStorage.getItem("usuario");
+        const tipoLogado = localStorage.getItem("tipo") || "votante"; // Novo: Ler tipo de perfil do usuário
         setEmojiAleatorio(EMOJIS[Math.floor(Math.random() * EMOJIS.length)]);
 
         if (!usuarioLogado?.trim()) {
@@ -112,7 +121,8 @@ function Secao() {
 
         if (idSecao && usuarioLogado) {
             setUsuario(usuarioLogado);
-            configureSocketEvents(usuarioLogado);
+            setTipo(tipoLogado); // Novo: Definir tipo de perfil do usuário
+            configureSocketEvents(usuarioLogado, tipoLogado);
             verificarSecao();
 
             // Adiciona evento para detectar fechamento da página
@@ -165,6 +175,12 @@ function Secao() {
     const handleVotacao = (textoBotao) => {
         if (!usuario) return;
         
+        // Novo: Rejeitar voto de observadores
+        if (tipo === 'observador') {
+            alert("Observadores não podem votar.");
+            return;
+        }
+        
         const novoVoto = { usuario, valor: textoBotao, idSecao };
         socket.emit('voto', novoVoto);
         
@@ -200,6 +216,7 @@ function Secao() {
 
         socket.emit("sair", { usuario, idSecao });
         localStorage.removeItem("usuario");
+        localStorage.removeItem("tipo"); // Novo: Limpa o tipo do perfil do usuário
         setUsuario("");
         navigate("/criarsecao");
     };
@@ -264,19 +281,30 @@ function Secao() {
 
     const ListaUsuarios = () => (
         <div className="usuarios-logados">
-            {usuarios.map((user, index) => (
-                <div key={index} className={`usuario-card ${votos[user] ? "votou" : ""}`}>
-                    <strong>{user}</strong>
-                    <span className="status-voto">
-                        {votos[user] ? "✅ Votou" : "❌ Não votou"}
-                    </span>
-                    {mostrarVotos && votos[user] && (
-                        <span className="voto-valor">
-                            {typeof votos[user] === "object" ? votos[user].emoji : obterEmoji(votos[user])}
+            {usuarios.map((userObj, index) => {
+                const userName = typeof userObj === 'string' ? userObj : userObj.nome;
+                const userType = typeof userObj === 'string' ? 'votante' : userObj.tipo;
+                const isObserver = userType === 'observador';
+                
+                return (
+                    <div key={index} className={`usuario-card ${votos[userName] ? "votou" : ""} ${isObserver ? 'observador' : ''}`}>
+                        <strong>
+                            {userName}
+                        </strong>
+                        {isObserver && (
+                            <span className="observer-badge" role="img" aria-label="Observador">👁️</span>
+                        )}
+                        <span className="status-voto">
+                            {isObserver ? 'Observando' : (votos[userName] ? "✅ Votou" : "❌ Não votou")}
                         </span>
-                    )}
-                </div>
-            ))}
+                        {mostrarVotos && votos[userName] && !isObserver && (
+                            <span className="voto-valor">
+                                {typeof votos[userName] === "object" ? votos[userName].emoji : obterEmoji(votos[userName])}
+                            </span>
+                        )}
+                    </div>
+                );
+            })}
         </div>
     );
 

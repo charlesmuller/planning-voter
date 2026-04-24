@@ -106,21 +106,31 @@ const secaoHelpers = {
 
     removerUsuarioDeOutrasSecoes: (usuario, idSecaoAtual) => {
         for (const secao in secoes) {
-            if (secoes[secao].usuarios.includes(usuario) && secao !== idSecaoAtual) {
-                secoes[secao].usuarios = secoes[secao].usuarios.filter(u => u !== usuario);
-                io.to(secao).emit("usuariosLogados", secoes[secao].usuarios);
+            if (secao !== idSecaoAtual) {
+                const index = secoes[secao].usuarios.findIndex(u => u.nome === usuario);
+                if (index !== -1) {
+                    secoes[secao].usuarios.splice(index, 1);
+                    io.to(secao).emit("usuariosLogados", secoes[secao].usuarios);
+                }
             }
         }
     },
 
-    adicionarUsuario: (idSecao, usuario) => {
-        if (!secoes[idSecao].usuarios.includes(usuario)) {
-            secoes[idSecao].usuarios.push(usuario);
+    adicionarUsuario: (idSecao, usuario, tipo = 'votante') => {
+        // Validar tipo
+        if (!['votante', 'observador'].includes(tipo)) {
+            tipo = 'votante';
+        }
+        
+        // Verificar se usuário já existe nesta seção
+        const existe = secoes[idSecao].usuarios.some(u => u.nome === usuario);
+        if (!existe) {
+            secoes[idSecao].usuarios.push({ nome: usuario, tipo });
         }
     },
 
     removerUsuario: (idSecao, usuario) => {
-        const index = secoes[idSecao].usuarios.indexOf(usuario);
+        const index = secoes[idSecao].usuarios.findIndex(u => u.nome === usuario);
         if (index !== -1) {
             secoes[idSecao].usuarios.splice(index, 1);
         }
@@ -142,12 +152,17 @@ const secaoHelpers = {
 // Configuração dos eventos do Socket.IO
 io.on('connection', (socket) => {
     // Evento de login do usuário
-    socket.on('usuarioLogado', ({ usuario, idSecao }) => {
+    socket.on('usuarioLogado', ({ usuario, idSecao, tipo = 'votante' }) => {
         if (!idSecao) return;
+
+        // Validar tipo
+        if (!['votante', 'observador'].includes(tipo)) {
+            tipo = 'votante';
+        }
 
         secaoHelpers.criarSecao(idSecao);
         secaoHelpers.removerUsuarioDeOutrasSecoes(usuario, idSecao);
-        secaoHelpers.adicionarUsuario(idSecao, usuario);
+        secaoHelpers.adicionarUsuario(idSecao, usuario, tipo);
         
         socket.join(idSecao);
         io.to(idSecao).emit('usuariosLogados', secoes[idSecao].usuarios);
@@ -159,10 +174,24 @@ io.on('connection', (socket) => {
 
     // Evento de voto
     socket.on('voto', ({ usuario, valor, idSecao }) => {
-        if (secoes[idSecao]) {
-            secoes[idSecao].votos[usuario] = valor;
-            io.to(idSecao).emit("atualizarVotos", secoes[idSecao].votos);
+        if (!secoes[idSecao]) return;
+
+        // Verificar se usuário é observador
+        const usuarioObj = secoes[idSecao].usuarios.find(u => u.nome === usuario);
+        if (!usuarioObj) {
+            console.warn(`Usuário ${usuario} não encontrado na seção ${idSecao}`);
+            return;
         }
+
+        // Rejeitar voto de observadores
+        if (usuarioObj.tipo === 'observador') {
+            console.warn(`Observador ${usuario} tentou votar na seção ${idSecao}`);
+            return; // Silenciosamente ignora
+        }
+
+        // Registrar voto de votantes
+        secoes[idSecao].votos[usuario] = valor;
+        io.to(idSecao).emit("atualizarVotos", secoes[idSecao].votos);
     });
 
     // Evento para solicitar votos
@@ -202,9 +231,9 @@ io.on('connection', (socket) => {
     // Evento de desconexão
     socket.on("disconnect", () => {
         for (const [idSecao, dadosSecao] of Object.entries(secoes)) {
-            const index = dadosSecao.usuarios.indexOf(socket.id);
+            const index = dadosSecao.usuarios.findIndex(u => u.nome === socket.id || u.id === socket.id);
             if (index !== -1) {
-                const usuario = dadosSecao.usuarios[index];
+                const usuario = dadosSecao.usuarios[index].nome;
                 secaoHelpers.removerUsuario(idSecao, usuario);
                 delete secoes[idSecao].votos[usuario];
                 io.to(idSecao).emit("usuariosLogados", secoes[idSecao].usuarios);
