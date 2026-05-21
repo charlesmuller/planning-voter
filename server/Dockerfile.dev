@@ -22,3 +22,4 @@ EXPOSE 4000
 
 # Usa nodemon para hot-reload em desenvolvimento
 CMD ["npm", "run", "dev"]
+s
