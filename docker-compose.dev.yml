@@ -9,7 +9,8 @@ services:
       - ./client:/app
       - /app/node_modules
     env_file:
-      - ./client/.env.development
+      - path: ./client/.env.development
+        required: false
     environment:
       - NODE_ENV=development
       - PORT=3001
@@ -17,6 +18,8 @@ services:
       - WDS_SOCKET_HOST=localhost
       - REACT_APP_API_URL=http://localhost:4000/api
       - REACT_APP_SOCKET_URL=http://localhost:4000
+      # Chave de teste do Google reCAPTCHA v2 — fallback para quando .env.development não existir
+      - REACT_APP_RECAPTCHA_SITE_KEY=${REACT_APP_RECAPTCHA_SITE_KEY:-6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI}
     command: npm start
     depends_on:
       - server
@@ -38,6 +41,8 @@ services:
       - API_PORT=4000
       - LOG_LEVEL=debug
       - LOG_RETENTION_DAYS=15
+      # Chave de teste do Google reCAPTCHA v2 — fallback para quando .env.development não existir
+      - RECAPTCHA_SECRET_KEY=${RECAPTCHA_SECRET_KEY:-6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe}
     env_file:
       - ./server/.env.development
     command: npm run dev

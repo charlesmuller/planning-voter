@@ -100,10 +100,11 @@ configureExpressMiddleware();
 const secaoHelpers = {
     criarSecao: (idSecao) => {
         if (!secoes[idSecao]) {
-            secoes[idSecao] = { 
-                usuarios: [], 
+            secoes[idSecao] = {
+                usuarios: [],
                 votos: {},
-                tempoInicio: Date.now() // Armazena quando a seção foi criada
+                tempoInicio: Date.now(), // Armazena quando a seção foi criada
+                revelado: false,
             };
         }
         return secoes[idSecao];
@@ -205,7 +206,12 @@ io.on('connection', (socket) => {
         socket.join(idSecao);
         io.to(idSecao).emit('usuariosLogados', secoes[idSecao].usuarios);
         socket.emit("atualizarVotos", secoes[idSecao].votos);
-        
+
+        // Se a rodada já está revelada, sincroniza o novo usuário
+        if (secoes[idSecao].revelado) {
+            socket.emit("mostrarVotos", secoes[idSecao].votos);
+        }
+
         // Envia o tempo inicial da seção para sincronizar o timer
         socket.emit("sincronizarTimer", { tempoInicio: secoes[idSecao].tempoInicio });
 
@@ -246,6 +252,7 @@ io.on('connection', (socket) => {
         if (!identidade) return;
 
         if (secoes[identidade.idSecao]) {
+            secoes[identidade.idSecao].revelado = true;
             io.to(identidade.idSecao).emit("receberVotos", secoes[identidade.idSecao].votos);
             io.to(identidade.idSecao).emit("mostrarVotos", secoes[identidade.idSecao].votos);
             logger.info('Votos revelados', {
@@ -286,7 +293,8 @@ io.on('connection', (socket) => {
         if (secoes[identidade.idSecao]) {
             secaoHelpers.limparVotos(identidade.idSecao);
             secaoHelpers.resetarTimer(identidade.idSecao); // Reseta o timer no servidor
-            
+            secoes[identidade.idSecao].revelado = false;
+
             io.to(identidade.idSecao).emit("resetarRodada");
             io.to(identidade.idSecao).emit("novaRodada"); // Propaga o evento para todos os clientes
             io.to(identidade.idSecao).emit("receberVotos", secoes[identidade.idSecao].votos);
