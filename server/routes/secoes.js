@@ -3,7 +3,7 @@ const router = express.Router();
 const cookieParser = require('cookie-parser');
 const csrf = require('csurf');
 
-// Import controllers
+// Importar controladores
 const {
   criarSecaoController,
   loginController,
@@ -12,12 +12,12 @@ const {
   healthCheckController,
 } = require('../controllers/secaoController');
 
-// Import middleware
+// Importar middleware
 const setSecurityHeaders = require('../middleware/securityHeaders');
 
 router.use(cookieParser());
 
-// Configure CSRF protection
+// Configurar proteção CSRF
 const csrfProtection = csrf({
   cookie: {
     httpOnly: true,
@@ -29,10 +29,10 @@ const csrfProtection = csrf({
   },
 });
 
-// Apply security headers to all routes
+// Aplicar cabeçalhos de segurança a todas as rotas
 router.use(setSecurityHeaders);
 
-// Routes
+// Rotas
 router.get('/csrf-token', csrfProtection, getCsrfTokenController);
 router.get('/health', healthCheckController);
 router.post('/criar-secao', csrfProtection, criarSecaoController);

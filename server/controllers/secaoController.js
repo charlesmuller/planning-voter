@@ -2,13 +2,13 @@ const secaoValidator = require('../validators/secaoValidator');
 const secaoService = require('../services/secaoService');
 
 /**
- * Controller for creating a new section
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
+ * Controlador para criação de nova seção
+ * @param {Object} req - Objeto de requisição Express
+ * @param {Object} res - Objeto de resposta Express
  */
 const criarSecaoController = async (req, res) => {
   try {
-    // Validate request body
+    // Validar corpo da requisição
     const validation = secaoValidator.validateCreateSecaoRequest(req.body);
     if (!validation.isValid) {
       return res.status(400).json({ error: validation.error });
@@ -33,13 +33,13 @@ const criarSecaoController = async (req, res) => {
 };
 
 /**
- * Controller for user login to a section
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
+ * Controlador para login de usuário em uma seção
+ * @param {Object} req - Objeto de requisição Express
+ * @param {Object} res - Objeto de resposta Express
  */
 const loginController = async (req, res) => {
   try {
-    // Validate request body
+    // Validar corpo da requisição
     const validation = secaoValidator.validateLoginRequest(req.body);
     if (!validation.isValid) {
       return res.status(400).json({ error: validation.error });
@@ -63,15 +63,15 @@ const loginController = async (req, res) => {
 };
 
 /**
- * Controller for validating a section
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
+ * Controlador para validar uma seção
+ * @param {Object} req - Objeto de requisição Express
+ * @param {Object} res - Objeto de resposta Express
  */
 const validarSecaoController = async (req, res) => {
   try {
     const { idSecao } = req.params;
 
-    // Validate section ID format
+    // Validar formato do ID da seção
     const validation = secaoValidator.validateIdSecao(idSecao);
     if (!validation.isValid) {
       return res.status(400).json({ valida: false, error: validation.error });
@@ -92,28 +92,28 @@ const validarSecaoController = async (req, res) => {
 };
 
 /**
- * Controller for CSRF token generation
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
+ * Controlador para geração de token CSRF
+ * @param {Object} req - Objeto de requisição Express
+ * @param {Object} res - Objeto de resposta Express
  */
 const getCsrfTokenController = (req, res) => {
   res.json({ csrfToken: req.csrfToken() });
 };
 
 /**
- * Controller for health check
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
+ * Controlador para health check
+ * @param {Object} req - Objeto de requisição Express
+ * @param {Object} res - Objeto de resposta Express
  */
 const healthCheckController = (req, res) => {
-  // Verify if request comes from localhost
+  // Verificar se a requisição vem do localhost
   const requestIP = req.ip || req.connection.remoteAddress;
   const isLocalhost =
     requestIP === '127.0.0.1' ||
     requestIP === '::1' ||
     requestIP.includes('::ffff:127.0.0.1');
 
-  // Check authentication header
+  // Verificar cabeçalho de autenticação
   const authHeader = req.headers['x-health-check-key'];
   const isValidKey = authHeader === process.env.HEALTH_CHECK_KEY;
 

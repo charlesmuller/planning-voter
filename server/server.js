@@ -111,21 +111,31 @@ const secaoHelpers = {
 
     removerUsuarioDeOutrasSecoes: (usuario, idSecaoAtual) => {
         for (const secao in secoes) {
-            if (secoes[secao].usuarios.includes(usuario) && secao !== idSecaoAtual) {
-                secoes[secao].usuarios = secoes[secao].usuarios.filter(u => u !== usuario);
-                io.to(secao).emit("usuariosLogados", secoes[secao].usuarios);
+            if (secao !== idSecaoAtual) {
+                const index = secoes[secao].usuarios.findIndex(u => u.nome === usuario);
+                if (index !== -1) {
+                    secoes[secao].usuarios.splice(index, 1);
+                    io.to(secao).emit("usuariosLogados", secoes[secao].usuarios);
+                }
             }
         }
     },
 
-    adicionarUsuario: (idSecao, usuario) => {
-        if (!secoes[idSecao].usuarios.includes(usuario)) {
-            secoes[idSecao].usuarios.push(usuario);
+    adicionarUsuario: (idSecao, usuario, tipo = 'votante') => {
+        // Validar tipo
+        if (!['votante', 'observador'].includes(tipo)) {
+            tipo = 'votante';
+        }
+        
+        // Verificar se usuário já existe nesta seção
+        const existe = secoes[idSecao].usuarios.some(u => u.nome === usuario);
+        if (!existe) {
+            secoes[idSecao].usuarios.push({ nome: usuario, tipo });
         }
     },
 
     removerUsuario: (idSecao, usuario) => {
-        const index = secoes[idSecao].usuarios.indexOf(usuario);
+        const index = secoes[idSecao].usuarios.findIndex(u => u.nome === usuario);
         if (index !== -1) {
             secoes[idSecao].usuarios.splice(index, 1);
         }
@@ -190,17 +200,22 @@ io.on('connection', (socket) => {
     logger.debug('Socket conectado', { socketId: socket.id });
 
     // Evento de login do usuário
-    socket.on('usuarioLogado', ({ usuario, idSecao }) => {
+    socket.on('usuarioLogado', ({ usuario, idSecao, tipo = 'votante' }) => {
         if (!idSecao || !usuario) {
             logger.warning('Tentativa de login com dados inválidos', { usuario, idSecao, socketId: socket.id });
             return;
         }
 
+        // Validar tipo
+        if (!['votante', 'observador'].includes(tipo)) {
+            tipo = 'votante';
+        }
+
         secaoHelpers.criarSecao(idSecao);
         secaoHelpers.removerUsuarioDeOutrasSecoes(usuario, idSecao);
-        secaoHelpers.adicionarUsuario(idSecao, usuario);
+        secaoHelpers.adicionarUsuario(idSecao, usuario, tipo);
 
-        socketsPorUsuario.set(socket.id, { usuario, idSecao });
+        socketsPorUsuario.set(socket.id, { usuario, idSecao, tipo });
 
         socket.join(idSecao);
         io.to(idSecao).emit('usuariosLogados', secoes[idSecao].usuarios);
@@ -226,6 +241,15 @@ io.on('connection', (socket) => {
             logger.warning('Voto recebido para seção inexistente', {
                 usuario: identidade.usuario,
                 valor,
+                idSecao: identidade.idSecao,
+            });
+            return;
+        }
+
+        const usuarioObj = secoes[identidade.idSecao].usuarios.find(u => u.nome === identidade.usuario);
+        if (usuarioObj && usuarioObj.tipo === 'observador') {
+            logger.warning('Observador tentou votar', {
+                usuario: identidade.usuario,
                 idSecao: identidade.idSecao,
             });
             return;
