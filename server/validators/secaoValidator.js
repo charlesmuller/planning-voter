@@ -1,8 +1,8 @@
 const MESSAGES = require('../constants/messages');
 
 /**
- * Validates username input
- * @param {string} usuario - Username to validate
+ * Valida o nome de usuário
+ * @param {string} usuario - Nome de usuário a validar
  * @returns {Object} { isValid: boolean, error?: string }
  */
 const validateUsuario = (usuario) => {
@@ -19,8 +19,8 @@ const validateUsuario = (usuario) => {
 };
 
 /**
- * Validates section ID input
- * @param {string} idSecao - Section ID to validate
+ * Valida o ID da seção
+ * @param {string} idSecao - ID da seção a validar
  * @returns {Object} { isValid: boolean, error?: string }
  */
 const validateIdSecao = (idSecao) => {
@@ -32,8 +32,8 @@ const validateIdSecao = (idSecao) => {
 };
 
 /**
- * Validates reCAPTCHA token input
- * @param {string} token - reCAPTCHA token to validate
+ * Valida o token reCAPTCHA
+ * @param {string} token - Token reCAPTCHA a validar
  * @returns {Object} { isValid: boolean, error?: string }
  */
 const validateRecaptchaToken = (token) => {
@@ -45,20 +45,24 @@ const validateRecaptchaToken = (token) => {
 };
 
 /**
- * Validates criar-secao request body
- * @param {Object} body - Request body
+ * Valida o corpo da requisição de criação de seção
+ * @param {Object} body - Corpo da requisição
  * @returns {Object} { isValid: boolean, error?: string, data?: Object }
  */
 const validateCreateSecaoRequest = (body) => {
-  const { recaptchaToken, usuario } = body;
+  const { recaptchaToken, usuario, tipo } = body;
 
-  // Validate token
-  const tokenValidation = validateRecaptchaToken(recaptchaToken);
-  if (!tokenValidation.isValid) {
-    return { isValid: false, error: tokenValidation.error };
+  // Validar token somente se o reCAPTCHA estiver configurado
+  let tokenValue = recaptchaToken;
+  if (process.env.RECAPTCHA_SECRET_KEY) {
+    const tokenValidation = validateRecaptchaToken(recaptchaToken);
+    if (!tokenValidation.isValid) {
+      return { isValid: false, error: tokenValidation.error };
+    }
+    tokenValue = tokenValidation.value;
   }
 
-  // Validate usuario
+  // Validar usuário
   const usuarioValidation = validateUsuario(usuario);
   if (!usuarioValidation.isValid) {
     return { isValid: false, error: usuarioValidation.error };
@@ -67,32 +71,33 @@ const validateCreateSecaoRequest = (body) => {
   return {
     isValid: true,
     data: {
-      recaptchaToken: tokenValidation.value,
+      recaptchaToken: tokenValue,
       usuario: usuarioValidation.value,
+      tipo: ['votante', 'observador'].includes(tipo) ? tipo : 'votante',
     },
   };
 };
 
 /**
- * Validates login request body
- * @param {Object} body - Request body
+ * Valida o corpo da requisição de login
+ * @param {Object} body - Corpo da requisição
  * @returns {Object} { isValid: boolean, error?: string, data?: Object }
  */
 const validateLoginRequest = (body) => {
-  const { recaptchaToken, usuario, idSecao } = body;
+  const { recaptchaToken, usuario, idSecao, tipo } = body;
 
-  // Validate token if configured
+  // Validar token se o reCAPTCHA estiver configurado
   if (process.env.RECAPTCHA_SECRET_KEY && !recaptchaToken) {
     return { isValid: false, error: MESSAGES.IDRECAPTCHA_MISSING };
   }
 
-  // Validate usuario
+  // Validar usuário
   const usuarioValidation = validateUsuario(usuario);
   if (!usuarioValidation.isValid) {
     return { isValid: false, error: usuarioValidation.error };
   }
 
-  // Validate idSecao
+  // Validar idSecao
   const idSecaoValidation = validateIdSecao(idSecao);
   if (!idSecaoValidation.isValid) {
     return { isValid: false, error: idSecaoValidation.error };
@@ -104,6 +109,7 @@ const validateLoginRequest = (body) => {
       recaptchaToken,
       usuario: usuarioValidation.value,
       idSecao: idSecaoValidation.value,
+      tipo: ['votante', 'observador'].includes(tipo) ? tipo : 'votante',
     },
   };
 };

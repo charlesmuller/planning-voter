@@ -16,7 +16,6 @@
     background-color: var(--hover-color);
     border-color: var(--hover-color);
     color: var(--text-color);
-    transform: translateY(-2px);
     box-shadow: 0 4px 8px var(--shadow-color);
 }
 
