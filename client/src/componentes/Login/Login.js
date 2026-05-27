@@ -64,8 +64,8 @@ function Login() {
             );
 
             if (response.status === 200) {
-                localStorage.setItem("usuario", usuario);
-                localStorage.setItem("tipo", tipo); // Novo: Salvar tipo de perfil do usuário
+                localStorage.setItem(`usuario:${idSecao}`, usuario);
+                localStorage.setItem(`tipo:${idSecao}`, tipo);
                 navigate(`/secao/${idSecao}`, { state: { usuario, tipo } });
             }
         } catch (error) {

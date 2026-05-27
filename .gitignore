@@ -1,0 +1,11 @@
+# Variáveis de ambiente (gerados pelo deploy ou locais — nunca commitar)
+.env
+.env.local
+.env.production
+
+# Dependências (cada subprojeto tem o seu)
+node_modules/
+
+# Artefatos temporários
+cookiejar.txt
+*.log

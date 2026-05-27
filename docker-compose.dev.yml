@@ -36,6 +36,8 @@ services:
       - NODE_ENV=development
       - CLIENT_URL=http://localhost:3001
       - API_PORT=4000
+      - LOG_LEVEL=debug
+      - LOG_RETENTION_DAYS=15
     env_file:
       - ./server/.env.development
     command: npm run dev

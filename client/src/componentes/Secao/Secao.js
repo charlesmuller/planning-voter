@@ -110,8 +110,8 @@ function Secao() {
     };
 
     useEffect(() => {
-        const usuarioLogado = localStorage.getItem("usuario");
-        const tipoLogado = localStorage.getItem("tipo") || "votante"; // Novo: Ler tipo de perfil do usuário
+        const usuarioLogado = localStorage.getItem(`usuario:${idSecao}`);
+        const tipoLogado = localStorage.getItem(`tipo:${idSecao}`) || "votante";
         setEmojiAleatorio(EMOJIS[Math.floor(Math.random() * EMOJIS.length)]);
 
         if (!usuarioLogado?.trim()) {
@@ -191,8 +191,13 @@ function Secao() {
     };
 
     const handleClickChange = (textoBotao) => {
+        if (tipo === 'observador') {
+            alert("Observadores não podem votar.");
+            return;
+        }
+
         setBotaoSelecionado(textoBotao);
-        
+
         if (textoBotao === "emoji") {
             handleVotacao(emojiAleatorio?.emoji || "emoji");
         } else {
@@ -215,8 +220,8 @@ function Secao() {
         if (!usuario) return;
 
         socket.emit("sair", { usuario, idSecao });
-        localStorage.removeItem("usuario");
-        localStorage.removeItem("tipo"); // Novo: Limpa o tipo do perfil do usuário
+        localStorage.removeItem(`usuario:${idSecao}`);
+        localStorage.removeItem(`tipo:${idSecao}`);
         setUsuario("");
         navigate("/criarsecao");
     };

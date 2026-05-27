@@ -581,7 +581,6 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.3s ease-in-out;
     color: var(--text-color);
 }
 
@@ -589,7 +588,6 @@
     border-color: var(--primary-color);
     background-color: var(--primary-color);
     color: var(--nav-text);
-    transform: scale(1.1);
 }
 
 .menu-secao-text {

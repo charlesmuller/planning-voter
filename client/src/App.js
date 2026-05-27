@@ -5,6 +5,10 @@ import Secao from "./componentes/Secao/Secao";
 import Footer from "./componentes/Footer/Footer";
 import { Routes, Route } from 'react-router-dom'; // Apenas importando as partes necessárias
 
+// Limpa chaves antigas do localStorage (formato global pré-login-por-seção)
+localStorage.removeItem("usuario");
+localStorage.removeItem("tipo");
+
 function App() {
   return (
     <div className='App'>

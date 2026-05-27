@@ -8,6 +8,9 @@ RUN npm ci --only=production
 # Copia o resto dos arquivos
 COPY . .
 
+# Garante que a pasta de logs exista com permissão de escrita
+RUN mkdir -p /usr/src/app/storage/logs && chown -R node:node /usr/src/app/storage
+
 # Configuração do ambiente de produção
 ENV NODE_ENV=production
 ENV NODE_OPTIONS="--max-old-space-size=768"
@@ -16,6 +19,8 @@ ENV NODE_OPTIONS="--max-old-space-size=768"
 COPY .env.production .env
 
 EXPOSE 4000
+
+USER node
 
 # Executa diretamente com Node.js em produção
 CMD ["node", "server.js"]

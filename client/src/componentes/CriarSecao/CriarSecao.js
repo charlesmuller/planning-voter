@@ -68,9 +68,9 @@ function CriarSecao() {
             const urlCompleta = `${urlBase}/secao/${idSecao}`;
 
             setUrlSecao(urlCompleta);
-            localStorage.setItem("usuario", usuario);
-            localStorage.setItem("tipo", tipo); // Salva perfil criado
-            
+            localStorage.setItem(`usuario:${idSecao}`, usuario);
+            localStorage.setItem(`tipo:${idSecao}`, tipo);
+
             // Redirecionar instantaneamente
             navigate(`/secao/${idSecao}`, { state: { usuario, tipo } });
 
