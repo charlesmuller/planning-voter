@@ -1,5 +1,6 @@
 import "./Login.css";
 import Botao from "../Botao/Botao";
+import SeletorPerfil from "../SeletorPerfil/SeletorPerfil";
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import ReCAPTCHA from "react-google-recaptcha";
@@ -116,36 +117,7 @@ function Login() {
                         />
                     </div>
 
-                    {/* Tipo de perfil */}
-                    <div className="input-container" style={{ marginBottom: '1.5rem' }}>
-                        <label>Escolha seu perfil</label>
-                        <div style={{ display: 'flex', gap: '2rem', marginTop: '0.5rem' }}>
-                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-                                <input
-                                    type="radio"
-                                    name="tipo"
-                                    value="votante"
-                                    checked={tipo === "votante"}
-                                    onChange={() => setTipo("votante")}
-                                    disabled={loading}
-                                    style={{ cursor: loading ? 'not-allowed' : 'pointer' }}
-                                />
-                                <span>👤 Votante</span>
-                            </label>
-                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-                                <input
-                                    type="radio"
-                                    name="tipo"
-                                    value="observador"
-                                    checked={tipo === "observador"}
-                                    onChange={() => setTipo("observador")}
-                                    disabled={loading}
-                                    style={{ cursor: loading ? 'not-allowed' : 'pointer' }}
-                                />
-                                <span>👁️ Observador (sem votação)</span>
-                            </label>
-                        </div>
-                    </div>
+                    <SeletorPerfil value={tipo} onChange={setTipo} disabled={loading} />
 
                     {/* reCAPTCHA widget */}
                     {process.env.REACT_APP_RECAPTCHA_SITE_KEY ? (

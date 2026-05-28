@@ -5,7 +5,7 @@
     min-height: 100vh; /* Usa no mínimo a altura da viewport */
     justify-content: flex-start; /* Conteúdo no topo */
     gap: 45px; /* Espaçamento maior entre componentes */
-    padding: 20px 0; /* Padding no topo e embaixo */
+    padding: 20px 0 80px 0; /* padding-bottom maior para não cobrir conteúdo com o footer fixo */
     box-sizing: border-box; /* Inclui padding no cálculo da altura */
 }
 
@@ -237,7 +237,7 @@
 @media (max-width: 768px) {
     .secao-main {
         gap: 15px;
-        padding: 15px 0;
+        padding: 15px 0 80px 0;
     }
     
     .timer-container {
@@ -274,18 +274,22 @@
     }
     
     .legenda-compacta {
-        gap: 15px;
+        gap: 10px;
     }
     
     .legenda-item-compacto {
-        font-size: 11px;
+        font-size: 13px;
+        flex: 1 1 240px;
+        max-width: 100%;
+        height: fit-content;
+        padding: 7px 10px;
     }
 }
 
 @media (max-width: 480px) {
     .secao-main {
         gap: 12px;
-        padding: 10px 0;
+        padding: 10px 0 80px 0;
     }
     
     .timer-container {
@@ -326,14 +330,24 @@
     }
     
     .legenda-compacta {
-        gap: 12px;
+        gap: 8px;
         flex-direction: column;
+        align-items: stretch;
     }
-    
+
     .legenda-item-compacto {
-        font-size: 10px;
+        font-size: 12px !important;
+        flex: 0 0 auto !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        height: auto !important;
+        min-height: 0 !important;
+        min-width: 0 !important;
+        padding: 6px 9px !important;
+        box-sizing: border-box !important;
+        overflow-wrap: anywhere !important;
     }
-    
+
     .usuarios-logados {
         gap: 8px;
         padding: 10px 5px;
@@ -359,7 +373,7 @@
 @media (max-width: 360px) {
     .secao-main {
         gap: 10px;
-        padding: 8px 0;
+        padding: 8px 0 80px 0;
     }
     
     .timer-container {
@@ -394,14 +408,25 @@
     }
     
     .legenda-compacta {
-        gap: 8px;
+        gap: 6px;
         flex-direction: column;
+        align-items: stretch;
     }
     
     .legenda-item-compacto {
-        font-size: 9px;
+        font-size: 11px !important;
+        flex: 0 0 auto !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        height: auto !important;
+        min-height: 0 !important;
+        min-width: 0 !important;
+        padding: 5px 8px !important;
+        line-height: 1.35 !important;
+        box-sizing: border-box !important;
+        overflow-wrap: anywhere !important;
     }
-    
+
     .usuarios-logados {
         padding: 8px 5px;
         gap: 6px;
@@ -643,21 +668,51 @@
 .legenda-compacta {
     display: flex;
     justify-content: center;
-    align-items: center;
-    gap: 20px;
+    align-items: flex-start;
+    gap: 12px;
     flex-wrap: wrap;
 }
 
 .legenda-item-compacto {
-    font-size: 15px;
+    font-size: 14px;
+    line-height: 1.4;
     color: var(--text-color);
-    opacity: 0.7;
-    white-space: nowrap;
+    opacity: 0.85;
+    flex: 0 1 260px;
+    max-width: 320px;
+    min-height: 0;
+    height: auto;
+    padding: 8px 12px;
+    background: rgba(0, 0, 0, 0.03);
+    border-radius: 6px;
+    border-left: 3px solid var(--primary-color);
+    text-align: left;
+    align-self: flex-start;
 }
 
 .legenda-item-compacto strong {
     color: var(--primary-color);
-    font-weight: 600;
+    font-weight: 700;
+    display: block;
+    margin-bottom: 2px;
+}
+
+/* Destaque para o item de alerta (21 pts - Pare e Revise) */
+.legenda-item-compacto.legenda-alerta {
+    border-left-color: #e07a5f;
+    background: rgba(224, 122, 95, 0.08);
+}
+
+.legenda-item-compacto.legenda-alerta strong {
+    color: #e07a5f;
+}
+
+.dark-theme .legenda-item-compacto {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.dark-theme .legenda-item-compacto.legenda-alerta {
+    background: rgba(224, 122, 95, 0.12);
 }
 
 /* Tema escuro para legenda compacta */
