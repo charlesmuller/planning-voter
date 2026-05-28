@@ -60,13 +60,15 @@ function Login() {
             // Validar login com reCAPTCHA no backend
             const response = await api.post(
                 "/login",
-                { recaptchaToken, usuario, idSecao },
+                { recaptchaToken, usuario, idSecao, tipo },
                 { withCredentials: true }
             );
 
             if (response.status === 200) {
+                const token = response.data && response.data.token;
                 localStorage.setItem(`usuario:${idSecao}`, usuario);
                 localStorage.setItem(`tipo:${idSecao}`, tipo);
+                if (token) localStorage.setItem(`token:${idSecao}`, token);
                 navigate(`/secao/${idSecao}`, { state: { usuario, tipo } });
             }
         } catch (error) {

@@ -1,7 +1,7 @@
 import "./Secao.css"
 import Botao from "../Botao/Botao"
-import socket from '../../comunication/socket';
-import { useState, useEffect } from "react"
+import { criarSocket, desconectarSocket } from '../../comunication/socket';
+import { useState, useEffect, useRef } from "react"
 import { useNavigate, useParams } from "react-router-dom";
 import api from "../../api/api";
 import Icon from '@mdi/react';
@@ -39,6 +39,8 @@ function Secao() {
     const [timerReset, setTimerReset] = useState(0);
     const [timerStartTime, setTimerStartTime] = useState(null);
 
+    // Ref para guardar a instância do socket autenticado
+    const socketRef = useRef(null);
 
     // Hooks de roteamento, tema e cronômetro
     const { idSecao } = useParams();
@@ -48,7 +50,10 @@ function Secao() {
 
     // Configuração dos eventos do Socket
     const configureSocketEvents = (usuarioLogado, tipoLogado) => {
-        socket.emit('usuarioLogado', { usuario: usuarioLogado, idSecao, tipo: tipoLogado });
+        const socket = socketRef.current;
+        if (!socket) return;
+
+        socket.emit('usuarioLogado');
 
         socket.on("usuariosLogados", (usuariosLogados) => {
             // Novo: Tratar ambos os formatos (array de strings e array de objetos) e convertê-los para o formato de objeto esperado
@@ -105,19 +110,30 @@ function Secao() {
     const handleBeforeUnload = (usuarioAtual, secaoId) => {
         return (event) => {
             // Notifica o servidor que o usuário está saindo
-            socket.emit("sair", { usuario: usuarioAtual, idSecao: secaoId });
+            socketRef.current?.emit("sair", { usuario: usuarioAtual, idSecao: secaoId });
         };
     };
 
     useEffect(() => {
         const usuarioLogado = localStorage.getItem(`usuario:${idSecao}`);
         const tipoLogado = localStorage.getItem(`tipo:${idSecao}`) || "votante";
+        const tokenLogado = localStorage.getItem(`token:${idSecao}`);
         setEmojiAleatorio(EMOJIS[Math.floor(Math.random() * EMOJIS.length)]);
 
-        if (!usuarioLogado?.trim()) {
+        if (!usuarioLogado?.trim() || !tokenLogado) {
             navigate("/login", { state: { idSecao } });
             return;
         }
+
+        // Cria socket autenticado com o token. Se o token expirou, o servidor
+        // recusa a conexão e o handler de erro abaixo redireciona pro login.
+        socketRef.current = criarSocket(tokenLogado);
+        socketRef.current.on('connect_error', (err) => {
+            if (err && typeof err.message === 'string' && err.message.startsWith('auth:')) {
+                localStorage.removeItem(`token:${idSecao}`);
+                navigate("/login", { state: { idSecao } });
+            }
+        });
 
         if (idSecao && usuarioLogado) {
             setUsuario(usuarioLogado);
@@ -155,19 +171,28 @@ function Secao() {
 
         // Limpa todos os eventos quando o componente desmontar ou quando idSecao mudar
         return () => {
-            // Remove todos os listeners de eventos
-            socket.off("usuariosLogados");
-            socket.off("atualizarVotos");
-            socket.off("receberVotos");
-            socket.off("mostrarVotos");
-            socket.off("resetarRodada");
+            const socket = socketRef.current;
+
+            if (socket) {
+                socket.off("usuariosLogados");
+                socket.off("atualizarVotos");
+                socket.off("receberVotos");
+                socket.off("mostrarVotos");
+                socket.off("resetarRodada");
+                socket.off("novaRodada");
+                socket.off("sincronizarTimer");
+                socket.off("connect_error");
+
+                // Notifica o servidor que o usuário está saindo
+                socket.emit("sair", { usuario: usuarioLogado, idSecao });
+            }
 
             // Remove o evento de beforeunload
             const handleUnload = handleBeforeUnload(usuarioLogado, idSecao);
             window.removeEventListener('beforeunload', handleUnload);
 
-            // Notifica o servidor que o usuário está saindo
-            socket.emit("sair", { usuario: usuarioLogado, idSecao });
+            desconectarSocket();
+            socketRef.current = null;
         };
     }, [idSecao, navigate]);
 
@@ -182,8 +207,8 @@ function Secao() {
         }
         
         const novoVoto = { usuario, valor: textoBotao, idSecao };
-        socket.emit('voto', novoVoto);
-        
+        socketRef.current?.emit('voto', novoVoto);
+
         setVotos(prev => ({
             ...prev,
             [usuario]: textoBotao,
@@ -206,12 +231,12 @@ function Secao() {
     };
 
     const handleMostrarVotos = () => {
-        socket.emit("pedirVotos", { usuario, idSecao, votos });
+        socketRef.current?.emit("pedirVotos", { usuario, idSecao, votos });
         setMostrarVotos(true);
     };
 
     const handleNovaRodada = () => {
-        socket.emit("novaRodada", { idSecao, votos });
+        socketRef.current?.emit("novaRodada", { idSecao, votos });
         setEmojiAleatorio(EMOJIS[Math.floor(Math.random() * EMOJIS.length)]);
         // Os resets serão feitos via socket para sincronizar todos os usuários
     };
@@ -219,9 +244,10 @@ function Secao() {
     const handleSair = () => {
         if (!usuario) return;
 
-        socket.emit("sair", { usuario, idSecao });
+        socketRef.current?.emit("sair", { usuario, idSecao });
         localStorage.removeItem(`usuario:${idSecao}`);
         localStorage.removeItem(`tipo:${idSecao}`);
+        localStorage.removeItem(`token:${idSecao}`);
         setUsuario("");
         navigate("/criarsecao");
     };
