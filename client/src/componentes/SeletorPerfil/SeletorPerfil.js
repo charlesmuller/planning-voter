@@ -11,7 +11,7 @@ const PERFIS = [
         id: "observador",
         icone: "👁️",
         titulo: "Observador",
-        descricao: "Acompanha a seção sem votar (ex.: PO, líder técnico)",
+        descricao: "Acompanha a seção sem votar (ex.: PO, Gestores e etc.)",
     },
 ];
 
