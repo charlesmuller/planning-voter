@@ -81,6 +81,7 @@ jobs:
           HEALTH_CHECK_KEY: ${{ secrets.HEALTH_CHECK_KEY }}
           RECAPTCHA_SECRET_KEY: ${{ secrets.RECAPTCHA_SECRET_KEY }}
           RECAPTCHA_SITE_KEY: ${{ secrets.RECAPTCHA_SITE_KEY }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
         run: |
           # Server environment file
           echo "Criando arquivo .env.production do servidor..."
@@ -102,6 +103,9 @@ jobs:
             echo ""
             echo "# Google reCAPTCHA"
             echo "RECAPTCHA_SECRET_KEY=$RECAPTCHA_SECRET_KEY"
+            echo ""
+            echo "# JWT (autenticação de sockets)"
+            echo "JWT_SECRET=$JWT_SECRET"
           } > server/.env.production
 
           # Client environment file
