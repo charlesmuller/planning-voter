@@ -5,8 +5,9 @@
     min-height: 100vh; /* Usa no mínimo a altura da viewport */
     justify-content: flex-start; /* Conteúdo no topo */
     gap: 45px; /* Espaçamento maior entre componentes */
-    padding: 20px 0 80px 0; /* padding-bottom maior para não cobrir conteúdo com o footer fixo */
+    padding: 20px 0; /* Padding base — mobile adiciona padding-bottom maior para fugir do footer fixo */
     box-sizing: border-box; /* Inclui padding no cálculo da altura */
+    width: 100%;
 }
 
 .secao-content {
@@ -238,6 +239,7 @@
     .secao-main {
         gap: 15px;
         padding: 15px 0 80px 0;
+        overflow-x: hidden;
     }
     
     .timer-container {
@@ -648,12 +650,13 @@
     width: 100%;
     max-width: 1200px;
     margin: 0 auto;
-    padding: 8px 16px; /* Reduzido de 12px para 8px */
+    padding: 8px 16px;
     background-color: var(--card-background);
     border-radius: 8px;
     box-shadow: 0 2px 4px var(--shadow-color);
     border: 1px solid var(--border-color);
     opacity: 0.9;
+    box-sizing: border-box;
 }
 
 .legenda-titulo {
@@ -678,8 +681,8 @@
     line-height: 1.4;
     color: var(--text-color);
     opacity: 0.85;
-    flex: 0 1 260px;
-    max-width: 320px;
+    flex: 1 1 220px;
+    max-width: 280px;
     min-height: 0;
     height: auto;
     padding: 8px 12px;
