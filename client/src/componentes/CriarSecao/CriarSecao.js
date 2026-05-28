@@ -1,5 +1,6 @@
 import "./CriarSecao.css";
 import Botao from "../Botao/Botao";
+import SeletorPerfil from "../SeletorPerfil/SeletorPerfil";
 import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import ReCAPTCHA from "react-google-recaptcha";
@@ -119,34 +120,7 @@ function CriarSecao() {
                         />
                     </div>
 
-                    {/* Seleção de tipo de perfil */}
-                    <div className="input-container" style={{ marginBottom: '1.5rem' }}>
-                        <label>Escolha seu perfil</label>
-                        <div style={{ display: 'flex', gap: '2rem', marginTop: '0.5rem' }}>
-                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-                                <input
-                                    type="radio"
-                                    name="tipo"
-                                    value="votante"
-                                    checked={tipo === "votante"}
-                                    onChange={() => setTipo("votante")}
-                                    disabled={loading}
-                                />
-                                <span>👤 Votante</span>
-                            </label>
-                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-                                <input
-                                    type="radio"
-                                    name="tipo"
-                                    value="observador"
-                                    checked={tipo === "observador"}
-                                    onChange={() => setTipo("observador")}
-                                    disabled={loading}
-                                />
-                                <span>👁️ Observador (sem votação)</span>
-                            </label>
-                        </div>
-                    </div>
+                    <SeletorPerfil value={tipo} onChange={setTipo} disabled={loading} />
 
                     {/* reCAPTCHA widget */}
                     <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'center' }}>

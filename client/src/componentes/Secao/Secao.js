@@ -345,28 +345,19 @@ function Secao() {
     // Componente da Legenda de Estimativas (versão compacta)
     const LegendaEstimativas = () => (
         <div className="legenda-container">
-            <div className="legenda-titulo">Estimativas com Story Points</div>
+            <div className="legenda-titulo">Escala de Pontos por Dimensões</div>
             <div className="legenda-compacta">
                 <span className="legenda-item-compacto">
-                    <strong>1 -</strong> Baixa complexidade sem incertezas e pontual
+                    <strong>1 a 3 (Pequeno):</strong> dimensões baixas — fluxo simples, solução conhecida e esforço baixo
                 </span>
                 <span className="legenda-item-compacto">
-                    <strong>2 -</strong> Baixa complexidade sem incertezas
+                    <strong>5 a 8 (Médio):</strong> dimensões baixas/médias — algumas dependências, dúvidas pontuais sem risco e esforço moderado
                 </span>
                 <span className="legenda-item-compacto">
-                    <strong>3 -</strong> Baixa complexidade com incertezas
+                    <strong>13 (Grande):</strong> alguma dimensão alta — arquitetura/regras complexas ou grande volume de trabalho (incerteza alta? crie um Spike)
                 </span>
-                <span className="legenda-item-compacto">
-                    <strong>5 -</strong> Média complexidade sem incertezas
-                </span>
-                <span className="legenda-item-compacto">
-                    <strong>8 -</strong> Média complexidade com incertezas
-                </span>
-                <span className="legenda-item-compacto">
-                    <strong>13 -</strong> Alta complexidade sem incertezas
-                </span>
-                <span className="legenda-item-compacto">
-                    <strong>21 -</strong> Alta complexidade com incertezas
+                <span className="legenda-item-compacto legenda-alerta">
+                    <strong>21 (Pare e Revise):</strong> múltiplas dimensões altas — não estime! Foque no ofensor: complexidade (quebre o escopo), incerteza (crie um Spike) ou esforço (divida a implementação)
                 </span>
             </div>
         </div>
