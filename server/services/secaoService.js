@@ -1,5 +1,6 @@
 const secaoRepository = require('../repositories/secaoRepository');
 const recaptchaService = require('./recaptchaService');
+const jwtService = require('./jwtService');
 const MESSAGES = require('../constants/messages');
 
 const urlLocal = process.env.CLIENT_URL || 'http://localhost:3000';
@@ -20,7 +21,7 @@ const generateSecaoId = () => {
  * @returns {Promise<Object>} { success: boolean, idSecao?: string, url?: string, error?: string }
  */
 const criarSecao = async (data) => {
-  const { usuario, recaptchaToken } = data;
+  const { usuario, recaptchaToken, tipo = 'votante' } = data;
 
   try {
     // Verificar token reCAPTCHA somente se estiver configurado
@@ -43,10 +44,14 @@ const criarSecao = async (data) => {
     // Salvar no repositório
     await secaoRepository.createSecao({ nome, uniqueLink });
 
+    const tipoFinal = ['votante', 'observador'].includes(tipo) ? tipo : 'votante';
+    const token = jwtService.gerarToken({ usuario, idSecao, tipo: tipoFinal });
+
     return {
       success: true,
       idSecao,
       url: uniqueLink,
+      token,
     };
   } catch (error) {
     console.error('Erro ao criar seção:', error.message);
@@ -67,7 +72,7 @@ const criarSecao = async (data) => {
  * @returns {Promise<Object>} { success: boolean, message?: string, error?: string, statusCode?: number }
  */
 const loginSecao = async (data) => {
-  const { usuario, idSecao, recaptchaToken } = data;
+  const { usuario, idSecao, recaptchaToken, tipo = 'votante' } = data;
 
   try {
     // Verificar token reCAPTCHA se estiver configurado
@@ -92,10 +97,14 @@ const loginSecao = async (data) => {
       };
     }
 
+    const tipoFinal = ['votante', 'observador'].includes(tipo) ? tipo : 'votante';
+    const token = jwtService.gerarToken({ usuario, idSecao, tipo: tipoFinal });
+
     return {
       success: true,
       message: MESSAGES.LOGIN_SUCCESS,
       statusCode: 200,
+      token,
     };
   } catch (error) {
     console.error('Erro ao fazer login:', error.message);

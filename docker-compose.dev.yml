@@ -43,6 +43,8 @@ services:
       - LOG_RETENTION_DAYS=15
       # Chave de teste do Google reCAPTCHA v2 — fallback para quando .env.development não existir
       - RECAPTCHA_SECRET_KEY=${RECAPTCHA_SECRET_KEY:-6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe}
+      # JWT — fallback dev. Em produção, configurar o secret real via GitHub Actions secret.
+      - JWT_SECRET=${JWT_SECRET:-dev-only-jwt-secret-trocar-em-producao}
     env_file:
       - ./server/.env.development
     command: npm run dev

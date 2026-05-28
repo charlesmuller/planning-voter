@@ -65,12 +65,14 @@ function CriarSecao() {
             );
 
             const idSecao = response.data.idSecao;
+            const token = response.data.token;
             const urlBase = process.env.REACT_APP_URL_LOCAL || "http://localhost:3000";
             const urlCompleta = `${urlBase}/secao/${idSecao}`;
 
             setUrlSecao(urlCompleta);
             localStorage.setItem(`usuario:${idSecao}`, usuario);
             localStorage.setItem(`tipo:${idSecao}`, tipo);
+            if (token) localStorage.setItem(`token:${idSecao}`, token);
 
             // Redirecionar instantaneamente
             navigate(`/secao/${idSecao}`, { state: { usuario, tipo } });

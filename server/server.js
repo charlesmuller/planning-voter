@@ -21,6 +21,7 @@ const CONFIG = {
 
 // Importações de rotas
 const secoesRoutes = require('./routes/secoes');
+const jwtService = require('./services/jwtService');
 
 // Estruturas de dados
 const secoes = {}; // Armazena usuários e votos por seção
@@ -50,6 +51,28 @@ const io = socketIo(server, {
     path: '/socket.io',
     transports: ['websocket', 'polling'],
     allowEIO3: true
+});
+
+// Middleware de autenticação do Socket.IO (valida JWT antes de aceitar conexão)
+io.use((socket, next) => {
+    const token = socket.handshake.auth && socket.handshake.auth.token;
+    if (!token) {
+        logger.warning('Conexão socket sem token', { socketId: socket.id });
+        return next(new Error('auth:missing-token'));
+    }
+
+    const { valido, payload, erro } = jwtService.verificarToken(token);
+    if (!valido) {
+        logger.warning('Conexão socket com token inválido', { socketId: socket.id, erro });
+        return next(new Error('auth:invalid-token'));
+    }
+
+    socket.data = {
+        usuario: payload.usuario,
+        idSecao: payload.idSecao,
+        tipo: payload.tipo,
+    };
+    next();
 });
 
 // Configuração do middleware Express
@@ -200,10 +223,13 @@ const validarIdentidade = (socket, evento, idSecaoEsperada, usuarioInformado) =>
 io.on('connection', (socket) => {
     logger.debug('Socket conectado', { socketId: socket.id });
 
-    // Evento de login do usuário
-    socket.on('usuarioLogado', ({ usuario, idSecao, tipo = 'votante' }) => {
+    // Evento de login do usuário — usa identidade do JWT validado no handshake
+    socket.on('usuarioLogado', () => {
+        const { usuario, idSecao } = socket.data || {};
+        let { tipo } = socket.data || {};
+
         if (!idSecao || !usuario) {
-            logger.warning('Tentativa de login com dados inválidos', { usuario, idSecao, socketId: socket.id });
+            logger.warning('usuarioLogado sem identidade no socket.data', { socketId: socket.id });
             return;
         }
 

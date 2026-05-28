@@ -25,6 +25,7 @@ const criarSecaoController = async (req, res) => {
     res.json({
       idSecao: result.idSecao,
       url: result.url,
+      token: result.token,
     });
   } catch (error) {
     console.error('Erro no controlador criarSecao:', error);
@@ -55,6 +56,7 @@ const loginController = async (req, res) => {
     res.status(result.statusCode).json({
       success: true,
       message: result.message,
+      token: result.token,
     });
   } catch (error) {
     console.error('Erro no controlador login:', error);
