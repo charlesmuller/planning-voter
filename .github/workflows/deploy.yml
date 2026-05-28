@@ -181,6 +181,7 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_PRIVATE_KEY }}
+          command_timeout: 25m
           debug: true
           script: |
             # Navega para o diretório do projeto
@@ -191,7 +192,7 @@ jobs:
               echo "Arquivo server/.env.production não encontrado"
               exit 1
             fi
-            
+
             if [ ! -f client/.env.production ]; then
               echo "Arquivo client/.env.production não encontrado"
               exit 1
@@ -206,8 +207,8 @@ jobs:
             # Para os containers atuais
             docker-compose -f docker-compose.prod.yml down
 
-            # Limpa recursos não utilizados
-            docker system prune -af --volumes
+            # Limpa imagens não utilizadas (preserva cache de layers e volumes nomeados)
+            docker image prune -af
 
             # Garante que a pasta de logs exista com dono correto (UID 1000 = usuário 'node' dentro do container)
             mkdir -p server/storage/logs
