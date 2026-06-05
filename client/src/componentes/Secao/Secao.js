@@ -53,7 +53,12 @@ function Secao() {
         const socket = socketRef.current;
         if (!socket) return;
 
-        socket.emit('usuarioLogado');
+        // Reemite o login em toda (re)conexão. Em mobile, transport close
+        // e ping timeout são comuns — o Socket.IO reconecta com novo socket.id
+        // e o servidor precisa repopular socketsPorUsuario.
+        const reemitirLogin = () => socket.emit('usuarioLogado');
+        socket.on('connect', reemitirLogin);
+        if (socket.connected) reemitirLogin();
 
         socket.on("usuariosLogados", (usuariosLogados) => {
             // Novo: Tratar ambos os formatos (array de strings e array de objetos) e convertê-los para o formato de objeto esperado
@@ -174,6 +179,7 @@ function Secao() {
             const socket = socketRef.current;
 
             if (socket) {
+                socket.off("connect");
                 socket.off("usuariosLogados");
                 socket.off("atualizarVotos");
                 socket.off("receberVotos");
