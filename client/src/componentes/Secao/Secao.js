@@ -53,7 +53,12 @@ function Secao() {
         const socket = socketRef.current;
         if (!socket) return;
 
-        socket.emit('usuarioLogado');
+        // Reemite o login em toda (re)conexão. Em mobile, transport close
+        // e ping timeout são comuns — o Socket.IO reconecta com novo socket.id
+        // e o servidor precisa repopular socketsPorUsuario.
+        const reemitirLogin = () => socket.emit('usuarioLogado');
+        socket.on('connect', reemitirLogin);
+        if (socket.connected) reemitirLogin();
 
         socket.on("usuariosLogados", (usuariosLogados) => {
             // Novo: Tratar ambos os formatos (array de strings e array de objetos) e convertê-los para o formato de objeto esperado
@@ -125,14 +130,47 @@ function Secao() {
             return;
         }
 
+        // Quando a aba volta ao foco (ex.: usuário desbloqueou o celular),
+        // força reconexão imediata em vez de esperar o ping timeout (~25s).
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible'
+                && socketRef.current
+                && !socketRef.current.connected) {
+                socketRef.current.connect();
+            }
+        };
+
         // Cria socket autenticado com o token. Se o token expirou, o servidor
         // recusa a conexão e o handler de erro abaixo redireciona pro login.
         socketRef.current = criarSocket(tokenLogado);
+        let tentativasFalha = 0;
         socketRef.current.on('connect_error', (err) => {
-            if (err && typeof err.message === 'string' && err.message.startsWith('auth:')) {
+            const msg = (err && err.message) || 'unknown';
+
+            if (msg.startsWith('auth:')) {
                 localStorage.removeItem(`token:${idSecao}`);
                 navigate("/login", { state: { idSecao } });
+                return;
             }
+
+            // Reporta falhas de conexão não-auth (sintoma "fica carregando")
+            // Só envia depois de 3 falhas pra evitar ruído de reconexão normal.
+            tentativasFalha += 1;
+            if (tentativasFalha === 3) {
+                import('../../comunication/errorReporter').then(({ reportarErro }) => {
+                    reportarErro('socket.connect_error', msg, {
+                        contexto: {
+                            tipo: err && err.type,
+                            tentativas: tentativasFalha,
+                            idSecao,
+                        },
+                    });
+                });
+            }
+        });
+
+        socketRef.current.on('connect', () => {
+            tentativasFalha = 0;
         });
 
         if (idSecao && usuarioLogado) {
@@ -144,6 +182,8 @@ function Secao() {
             // Adiciona evento para detectar fechamento da página
             const handleUnload = handleBeforeUnload(usuarioLogado, idSecao);
             window.addEventListener('beforeunload', handleUnload);
+
+            document.addEventListener('visibilitychange', handleVisibilityChange);
 
             // Verifica se a seção é válida (exemplo de requisição API)
             const checkSecaoExistente = async () => {
@@ -174,6 +214,7 @@ function Secao() {
             const socket = socketRef.current;
 
             if (socket) {
+                socket.off("connect");
                 socket.off("usuariosLogados");
                 socket.off("atualizarVotos");
                 socket.off("receberVotos");
@@ -190,6 +231,9 @@ function Secao() {
             // Remove o evento de beforeunload
             const handleUnload = handleBeforeUnload(usuarioLogado, idSecao);
             window.removeEventListener('beforeunload', handleUnload);
+
+            // Remove o evento de visibilitychange
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
 
             desconectarSocket();
             socketRef.current = null;

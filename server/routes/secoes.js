@@ -10,6 +10,7 @@ const {
   validarSecaoController,
   getCsrfTokenController,
   healthCheckController,
+  clientErrorController,
 } = require('../controllers/secaoController');
 
 // Importar middleware
@@ -38,5 +39,6 @@ router.get('/health', healthCheckController);
 router.post('/criar-secao', csrfProtection, criarSecaoController);
 router.post('/login', loginController);
 router.get('/secao/:idSecao', validarSecaoController);
+router.post('/client-error', clientErrorController);
 
 module.exports = router;

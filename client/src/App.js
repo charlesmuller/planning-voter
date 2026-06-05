@@ -4,10 +4,14 @@ import Login from "./componentes/Login/Login";
 import Secao from "./componentes/Secao/Secao";
 import Footer from "./componentes/Footer/Footer";
 import { Routes, Route } from 'react-router-dom'; // Apenas importando as partes necessárias
+import { instalarCapturaGlobal } from "./comunication/errorReporter";
 
 // Limpa chaves antigas do localStorage (formato global pré-login-por-seção)
 localStorage.removeItem("usuario");
 localStorage.removeItem("tipo");
+
+// Captura erros JS não tratados e envia pro servidor (POST /api/client-error)
+instalarCapturaGlobal();
 
 function App() {
   return (

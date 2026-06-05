@@ -1,5 +1,10 @@
 const secaoValidator = require('../validators/secaoValidator');
 const secaoService = require('../services/secaoService');
+const logger = require('../utils/logger');
+
+// Throttling em memória para client-error (1 evento por IP a cada 5s)
+const ultimoErroPorIp = new Map();
+const CLIENT_ERROR_MIN_INTERVAL_MS = 5000;
 
 /**
  * Controlador para criação de nova seção
@@ -127,10 +132,51 @@ const healthCheckController = (req, res) => {
   res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
 };
 
+/**
+ * Recebe relatórios de erro do frontend e loga estruturado.
+ * Útil pra diagnosticar quando o usuário diz "ficou carregando e nada acontece".
+ * Aceita corpo arbitrário mas limita tamanho e taxa por IP.
+ */
+const clientErrorController = (req, res) => {
+  const ip = req.ip || req.connection.remoteAddress || 'unknown';
+
+  // Throttling simples em memória
+  const agora = Date.now();
+  const ultimo = ultimoErroPorIp.get(ip);
+  if (ultimo && agora - ultimo < CLIENT_ERROR_MIN_INTERVAL_MS) {
+    return res.status(204).end();
+  }
+  ultimoErroPorIp.set(ip, agora);
+
+  // Limpa entradas velhas pra Map não crescer sem limite (best effort)
+  if (ultimoErroPorIp.size > 1000) {
+    for (const [k, v] of ultimoErroPorIp.entries()) {
+      if (agora - v > 60_000) ultimoErroPorIp.delete(k);
+    }
+  }
+
+  const { tipo, mensagem, stack, url, contexto } = req.body || {};
+
+  logger.warning('Erro reportado pelo client', {
+    ip,
+    userAgent: req.headers['user-agent'],
+    origin: req.headers.origin,
+    referer: req.headers.referer,
+    tipo: typeof tipo === 'string' ? tipo.slice(0, 100) : undefined,
+    mensagem: typeof mensagem === 'string' ? mensagem.slice(0, 500) : undefined,
+    stack: typeof stack === 'string' ? stack.slice(0, 2000) : undefined,
+    url: typeof url === 'string' ? url.slice(0, 500) : undefined,
+    contexto: contexto && typeof contexto === 'object' ? contexto : undefined,
+  });
+
+  res.status(204).end();
+};
+
 module.exports = {
   criarSecaoController,
   loginController,
   validarSecaoController,
   getCsrfTokenController,
   healthCheckController,
+  clientErrorController,
 };
