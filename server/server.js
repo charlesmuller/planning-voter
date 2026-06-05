@@ -26,6 +26,8 @@ const jwtService = require('./services/jwtService');
 // Estruturas de dados
 const secoes = {}; // Armazena usuários e votos por seção
 const socketsPorUsuario = new Map(); // socket.id -> { usuario, idSecao }
+const desconexoesPendentes = new Map(); // `${usuario}@${idSecao}` -> NodeJS.Timeout
+const DISCONNECT_GRACE_MS = 180000; // 3 min — janela para reconexão sem perder voto/posição
 
 // Inicialização do Express
 const app = express();
@@ -53,17 +55,28 @@ const io = socketIo(server, {
     allowEIO3: true
 });
 
+// Extrai metadados úteis do handshake para diagnóstico
+const handshakeMeta = (socket) => ({
+    socketId: socket.id,
+    ip: socket.handshake.address,
+    origin: socket.handshake.headers.origin,
+    userAgent: socket.handshake.headers['user-agent'],
+    transport: socket.conn && socket.conn.transport ? socket.conn.transport.name : undefined,
+});
+
 // Middleware de autenticação do Socket.IO (valida JWT antes de aceitar conexão)
 io.use((socket, next) => {
+    const meta = handshakeMeta(socket);
     const token = socket.handshake.auth && socket.handshake.auth.token;
+
     if (!token) {
-        logger.warning('Conexão socket sem token', { socketId: socket.id });
+        logger.warning('Conexão socket sem token', meta);
         return next(new Error('auth:missing-token'));
     }
 
     const { valido, payload, erro } = jwtService.verificarToken(token);
     if (!valido) {
-        logger.warning('Conexão socket com token inválido', { socketId: socket.id, erro });
+        logger.warning('Conexão socket com token inválido', { ...meta, erro });
         return next(new Error('auth:invalid-token'));
     }
 
@@ -72,7 +85,24 @@ io.use((socket, next) => {
         idSecao: payload.idSecao,
         tipo: payload.tipo,
     };
+
+    logger.debug('Handshake socket OK', { ...meta, usuario: payload.usuario, idSecao: payload.idSecao });
     next();
+});
+
+// Log também tentativas que erram no engine.io (antes do middleware)
+io.engine.on('connection_error', (err) => {
+    logger.warning('engine.io connection_error', {
+        code: err.code,
+        message: err.message,
+        context: err.context,
+        req: err.req ? {
+            url: err.req.url,
+            method: err.req.method,
+            origin: err.req.headers && err.req.headers.origin,
+            userAgent: err.req.headers && err.req.headers['user-agent'],
+        } : undefined,
+    });
 });
 
 // Configuração do middleware Express
@@ -242,6 +272,15 @@ io.on('connection', (socket) => {
         secaoHelpers.removerUsuarioDeOutrasSecoes(usuario, idSecao);
         secaoHelpers.adicionarUsuario(idSecao, usuario, tipo);
 
+        // Cancela qualquer remoção pendente (reconexão dentro do grace period)
+        const chavePendencia = `${usuario}@${idSecao}`;
+        const pendente = desconexoesPendentes.get(chavePendencia);
+        if (pendente) {
+            clearTimeout(pendente);
+            desconexoesPendentes.delete(chavePendencia);
+            logger.debug('Reconexão dentro do grace period', { usuario, idSecao });
+        }
+
         socketsPorUsuario.set(socket.id, { usuario, idSecao, tipo });
 
         socket.join(idSecao);
@@ -359,13 +398,35 @@ io.on('connection', (socket) => {
         }
     });
 
-    // Evento de desconexão
+    // Evento de desconexão — agenda remoção com grace period para reconexão (bloqueio de tela, troca de rede)
     socket.on("disconnect", (reason) => {
         const identidade = socketsPorUsuario.get(socket.id);
 
-        if (identidade) {
-            const { usuario, idSecao } = identidade;
-            socketsPorUsuario.delete(socket.id);
+        if (!identidade) {
+            logger.debug('Socket desconectado sem login prévio', { socketId: socket.id, reason });
+            return;
+        }
+
+        const { usuario, idSecao } = identidade;
+        socketsPorUsuario.delete(socket.id);
+
+        const chavePendencia = `${usuario}@${idSecao}`;
+
+        // Cancela timer anterior, se houver (proteção contra timers órfãos)
+        const anterior = desconexoesPendentes.get(chavePendencia);
+        if (anterior) clearTimeout(anterior);
+
+        const timer = setTimeout(() => {
+            desconexoesPendentes.delete(chavePendencia);
+
+            // Só remove se o usuário ainda não reconectou em outro socket
+            const aindaConectado = Array.from(socketsPorUsuario.values()).some(
+                (i) => i.usuario === usuario && i.idSecao === idSecao
+            );
+            if (aindaConectado) {
+                logger.debug('Reconectou antes do timeout — pulando remoção', { usuario, idSecao });
+                return;
+            }
 
             if (secoes[idSecao]) {
                 secaoHelpers.removerUsuario(idSecao, usuario);
@@ -374,11 +435,18 @@ io.on('connection', (socket) => {
                 io.to(idSecao).emit("atualizarVotos", secoes[idSecao].votos);
             }
 
-            logger.info('Usuário desconectado', { usuario, idSecao, socketId: socket.id, reason });
-            return;
-        }
+            logger.info('Usuário removido após grace period', { usuario, idSecao });
+        }, DISCONNECT_GRACE_MS);
 
-        logger.debug('Socket desconectado sem login prévio', { socketId: socket.id, reason });
+        desconexoesPendentes.set(chavePendencia, timer);
+
+        logger.info('Usuário desconectado (aguardando reconexão)', {
+            usuario,
+            idSecao,
+            socketId: socket.id,
+            reason,
+            graceMs: DISCONNECT_GRACE_MS,
+        });
     });
 });
 
